@@ -1,0 +1,335 @@
+Root User-Admin of account full acess 
+
+AWS CLI:
+-----------
+AWS CLI (Command Line Interface) is a tool that lets you interact with AWS services using terminal commands instead of clicking in the console.
+
+AWS SDK:
+------------
+It allows developers to interact with AWS using programming languages.
+Instead of terminal commands, you write code.
+
+IAM User 
+-----------
+ Users will have access to AWS services they can access them using AWS consoles CLI or SDK's for users to access any service they're gonna need permissions. To provide that permission we have to assign policies either to group or the roles that they're going to assume.
+
+IAM Groups:
+--------------
+Used to simplify user management. Users will be added to group and group will have policies which will be applied to those users.
+
+
+Least Privlage policy:
+--------------------------
+Give the users the access they want but take away the access that they don't
+ 
+Permissions:
+--------------
+permissions are fine grained control over the actions that you can run...
+eg:
+EC2startinstance,S3:GetObject,SNS:DeleteTopic ....
+ 
+We can attach upto 10 permissions for a user 
+
+The collection of permissions is called "policy" .
+
+Policy:
+----------
+Used to manage access and permissions in AWS they define the permissions and actions for a identity or resource.
+Can also consider them as set of rules that define what resoruces can an entity access and what operations they can perform.
+
+We can attach them to resources or to an identity.
+Identity Policy: Attaching a policy to a user,role or Group
+
+Policy is a simple JSON document which have statements of what and how much are allowed.
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow"
+            "Action": [
+                "s3: *" -->Allow all on s3 
+            ],
+            "Resource": [
+                "arn:aws:s3:::<bucket-name>"
+            ]
+
+        }
+    ]
+},
+
+Note:
+Bucket actions (ListBucket, DeleteBucket)	arn:aws:s3:::bucket-name
+Object actions (PutObject, GetObject, DeleteObject)	arn:aws:s3:::bucket-name/*
+
+
+Resource-based Policy: Attaching a policy to resource like S3Bucket,Lambda function 
+In this we have an extra value "Principal" where we define for which entity the policy applies to...
+Example:
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::111122223333:accountsGroup" -->Group/Entity/User
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::my-data-bucket/*"
+    }
+  ]
+}
+
+Accounts group is allowed to put objects in the particular S3 bucket
+
+
+Note ***
+Explicit Deny have heighest policy 
+if any resource have deny and allow for same entitity then it's "Deny" .
+If nothing mentioned(allow or Deny) that's implicityly Deny.
+
+Bucket ACL (Access Control List): 
+--------------------------------
+It is a way to control who can access an S3 bucket and what they can do.
+A simple permission list attached directly to the bucket.
+
+
+
+
+Permission Boundary :
+--------------------
+Sets the max permission an IAM entity such as user can be granted to prevent unintended access to resource and enforce the Principal of least privilage and limit scope of permissions.
+Example:
+Assume there's a group for Devops engineers and a new intern joins as a Devops engineer here we will add him in Devops group but we will set permission boundry to only list resources so that he doesn’t modify or delete resources.So eventhough the intern is in Devops group he will only be restricted to list resources.
+
+if a group have no access to lambda but we define it in permission boundry to have full access it would be no access to lambda.
+
+Role:
+-----
+We can add multiple permissions and create a role. Users and services will only have permissions what they need( Least privilege).
+IAM role creates temporary access keys that are valid for a set amount of time to access the AWS resource.
+
+Trust relationship: Roles can establish trust relationship with services,accounts or external identities to provide access.
+
+Why roles when we have policies?
+Roles exist to provide temporary, assumable permissions without permanent identities or long-term credentials and a user or resource cannot have multiple roles attached at the same time.
+An EC2 instance can have:
+Only ONE IAM role (instance profile) attached.
+If you need more permissions:Add multiple policies to that ONE role.
+
+
+Session Policies:
+-----------------
+Session policies are temporary permission restrictions applied when a role is assumed.
+User/Service Assume role -->Temp creds created ----attach session policy--
+
+Example of a user have a policy attached as below that is access all S3.
+{
+  "Action": "s3:*",
+  "Resource": "*"
+}
+But during assuming role we pass below to only read objects in reports.That is Temporary restriction without changing the role.
+{
+  "Action": "s3:GetObject",
+  "Resource": "arn:aws:s3:::reports/*"
+}
+
+Note: Session policies cannot grant new permissions.They can only Reduce permissions.
+Also Session policies cannot be passed when switching roles from the console UI.
+
+They are typically used with:
+
+CLI
+SDK
+automation pipelines
+federation
+
+Ex: Assume a user that have access for only reading objects from s3 but we want to provide temp access to upload files.
+
+User -->Only S3 get objects(only to list)
+Role-->Create a role to PutObject in s3 
+Trust -->Inside role trust policy add the user 
+{
+  "Effect": "Allow",
+  "Principal": {
+    "AWS": "arn:aws:iam::<account-id>:user/<username>"
+  },
+  "Action": "sts:AssumeRole"
+}
+
+User--> User policy needs to be updated to allow role 
+{
+  "Action": "sts:AssumeRole",
+  "Resource": "arn:aws:iam::<account-id>:role/UploadRole"
+}
+
+
+Temp Token-->Now the user can use below to get temp access 
+aws sts assume-role \
+  --role-arn arn:aws:iam::123456789:role/UploadRole \
+  --role-session-name UploadSession
+
+
+Auditing with CloudTrail:
+--------------------------
+We can use cloudtrail to audit activity and account actions in your AWS environment.If something happens in AWS, CloudTrail is usually the first place DevOps or security teams check. It tells us Who did what, when, from where.
+It logs all API calls to AWS services and also tracks and reviews them usually API calls made by AWS IAM users.
+
+
+Managed Poliy 
+--------------
+A managed policy is a standalone policy that exists independently in IAM and can be attached to multiple identities.
+Like Users,Groups and resources and can be re-used.
+AWS Managed Policies: These are predefined and available by default 
+
+Customer Managed Policies: Policies created by users/Admins 
+
+Inline
+------  
+An inline policy is embedded directly inside one IAM identity and cannot be re-used 
+example--> User: Intern--Inline Policy: ListS3Buckets
+If the user is deleted → the policy is deleted automatically.
+
+
+Note: 
+Best Practice 
+Use managed policies for most permissions
+Use inline policies only when the permission is specific to one identity
+
+Structure of a json:
+
+Effect : Deny or allow 
+Actions:  S3:GetObjects, EC2:Startinstance
+Resources: arn or instanceid
+conditions: soruce IP, time of day etc..
+Principal : Entity that the policy applies to 
+
+
+Password Policies:
+It defines the rules for IAM user passwords—basically enforcing strong security for console logins.
+
+It applies only to:
+IAM users using AWS Management Console
+NOT for programmatic access (access keys)
+
+We can configure passwords as below :
+Minimum Password Length,Require Character Types,Password Expiry (Rotation),Prevent Password Reuse,Allow Users to Change Password,Password Expiration Requires Admin Reset,
+
+STS 
+-----
+Authenticate → Authorize → Mint temporary credentials
+
+Flow -->Request Hits STS-->AWS Authenticates You-->Authorization Check(Permission&Trust Policy Check)-->STS Creates a Session
+
+
+Note when we send a request like --aws s3 ls 
+if we are logged in as IAM user (using secret and access keys ) AWS  Signs request using "SigV4".
+
+But if we're using STS Assume role to do aws s3 ls
+-->STS request send 
+-->AWS validated permission policy and Trust Policy 
+-->STS creates session (Role permissions+Expiry time+Session context)
+-->Temp credentials will be generated (AccessKey + Secret + SessionToken)
+-->Every Request Validation
+
+Assume we're providing s3 list access for a bucket in account B to a user X in Account A 
+
+Create Role in Account B-->Add trust policy as below 
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::ACCOUNT_A_ID:user/UserX"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+
+Attach permission policy to role
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket"],
+      "Resource": "arn:aws:s3:::test-bucket"
+    }
+  ]
+}
+
+User X needs permission to assume role so we need to add below 
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws:iam::ACCOUNT_B_ID:role/S3AccessRole"
+    }
+  ]
+}
+
+Once user X logged into AWS CLI they have to use below which will produce temp creds 
+
+aws sts assume-role \
+  --role-arn arn:aws:iam::ACCOUNT_B_ID:role/S3AccessRole \
+  --role-session-name testsession
+
+O/P
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+export AWS_SESSION_TOKEN=...
+
+
+Identity Provider:
+====================
+It is a centralized system that creates, maintains, and manages digital identities for users, computers, or applications. It verifies identities (authentication) and authorizes access to various apps, frequently using Single Sign-On (SSO) and Multi-factor Authentication (MFA) to improve security and efficiency, replacing multiple logins with one.
+
+--Protocols used--
+SAML 2.0 (very common in enterprises)
+OIDC (OpenID Connect) (modern apps, APIs)
+
+Examples:
+Google, Azure AD, Okta, etc.
+
+AWS Resource Access Manager:
+============================
+Amazon Web Services Resource Access Manager (RAM) lets you securely share AWS resources across accounts or within an organization.
+
+We cannot share everything, but many key resources:
+Common ones:
+VPC Subnets 
+Transit Gateways
+Route 53 Resolver rules
+License configurations
+Aurora DB clusters (in some setups)
+
+Create Resource Share -->Choose Who to Share With-->Attach Permissions-->Invite / Auto Accept-->Resource Becomes Usable
+
+
+Identity federation:
+======================
+Identity federation allows external users authenticated via an Identity Provider (like Azure AD or Google) to access cloud resources without creating IAM users, using protocols like SAML or OIDC, and it’s commonly used for enterprise SSO and secure CI/CD access.
+
+Flow:
+IDP ---Any Protocol used to connect (OIDC,SAML)-->federation(Trusts and authenticates)
+
+Users log in through a centralized IdP like Azure AD. AWS trusts this IdP via federation. Based on user groups in the IdP, users are mapped to IAM roles across multiple AWS accounts, and after login they can choose which account and role to assume.”
+
+
+private link 
+
+
+********
+LDAP 
+SAML 
+
+permission set --
+federation
+SigV4
+KMS
+gateway endpoint

@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(name: 'ENV', choices: ['dev','stage','prod'], description: 'Environment')
+        choice(name: 'ACTION', choices: ['plan','apply','destroy'], description: 'Terraform action')
+    }
+
+    environment {
+        AWS_REGION = "us-east-2"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/your-org/terraform-infra.git'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir("environments/${params.ENV}") {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                dir("environments/${params.ENV}") {
+                    sh 'terraform validate'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            when {
+                expression { params.ACTION == "plan" || params.ACTION == "apply" }
+            }
+            steps {
+                dir("environments/${params.ENV}") {
+                    sh "terraform plan -var-file=${params.ENV}.tfvars"
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            when {
+                expression { params.ACTION == "apply" }
+            }
+            steps {
+                dir("environments/${params.ENV}") {
+                    sh "terraform apply -auto-approve -var-file=${params.ENV}.tfvars"
+                }
+            }
+        }
+
+        stage('Terraform Destroy') {
+            when {
+                expression { params.ACTION == "destroy" }
+            }
+            steps {
+                dir("environments/${params.ENV}") {
+                    sh "terraform destroy -auto-approve -var-file=${params.ENV}.tfvars"
+                }
+            }
+        }
+    }
+}

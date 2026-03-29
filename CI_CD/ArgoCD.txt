@@ -1,0 +1,37 @@
+Problems/Challenges:
+Usually in CI/CD if we follow push based approach for the CD part thare are few drawbacks like
+-->Push-based CD requires external write access to the cluster, increasing security risk.
+-->Manual changes cause configuration drift between Git and the actual cluster state.
+-->Disaster recovery becomes unreliable because not all production changes are stored in Git.
+
+These can be overcomed using GITOPS 
+
+What is GitOps?
+It's framework where entire code delivery process is controlled via GIT it includes infra and applicationdefinition as code 
+and automation to deploy changes and rollbacks.
+
+The core idea is to have the infra applications and all related components declaratively defined in one or more git repos.
+In this scenario an automated process ensures that the desired state in Repo and actual state in prod env matches 
+A gitops operator runs within the k8s cluster and it continuesly monitors and pulls changes from Git repo and applies them 
+within the cluster in which it is running.
+it can also apply them in a different cluster too.
+Here rollback is easier as everything is version controlled if needed one can simply revert the changes and the gitops operator
+matches the state of cluster with repo.
+
+Principles of GitOps:
+1:Declerative over imperative
+2: Git as source of truth 
+3:Operatros pull the changes from GIT and apply them on one ore more env
+4:Re-consilation 
+
+Devops vs Gitops:
+IN Devops based model CI pipeline will contain secrets and read/write access to the k8s cluster 
+Whereas in Gitops model argo/flux sitting in cluster looks for chnages in repo and pulls the changes and applies in cluster
+
+Gitops Projects/Tools:
+ArgoCD
+FluxCD 
+Flagger 
+Ignite
+HelmOperator...
+

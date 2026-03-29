@@ -1,0 +1,20 @@
+Different types of instances:
+On Demand --Normal EC2 (0.2/hour)
+
+Reserved--Fixed amount of time commitment (Long Term usage)
+
+Spot -- very less price but if EC2 demand is high AWS will terminate it EBS can be snapped.for web server it's fine but not ideal for DB.
+
+Launch Templates -- A Launch Template is a reusable configuration that defines how EC2 instances should be launched.
+
+without template 
+Manual launch → wrong instance type → higher cost
+with 
+Predefined optimized type → consistent cost
+
+How launch template knows my VPC ?
+when you specify:
+Subnet ID
+AWS automatically knows VPC.
+
+Launch Templates are reusable EC2 configuration blueprints used mainly with Auto Scaling Groups and other services. They help standardize deployments, enable cost optimization through spot instances and scaling, and networking is determined through subnet selection, which implicitly defines the VPC.

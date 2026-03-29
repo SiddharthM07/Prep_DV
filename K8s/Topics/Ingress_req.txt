@@ -1,0 +1,161 @@
+
+
+demo-eks
+
+
+  
+Create role for multiple things(tag based and least priviliged)
+root@ip-10-1-1-124:~# aws iam create-policy   --policy-name AWSLoadBalancerControllerIAMPolicy   --policy-document file://iam_policy.json
+{
+    "Policy": {
+        "PolicyName": "AWSLoadBalancerControllerIAMPolicy",
+        "PolicyId": "xx",
+        "Arn": "arn:aws:iam::154803695472:policy/AWSLoadBalancerControllerIAMPolicy",
+        "Path": "/",
+        "DefaultVersionId": "v1",
+        "AttachmentCount": 0,
+        "PermissionsBoundaryUsageCount": 0,
+        "IsAttachable": true,
+        "CreateDate": "2026-02-19T12:21:12+00:00",
+        "UpdateDate": "2026-02-19T12:21:12+00:00"
+    }
+}
+root@ip-10-1-1-124:~# 
+
+Role for below :
+Creates Load Balancers
+Reads AWS Network Information
+Manages Security Groups
+Creates and Manages Target Groups
+Manages Listeners & Routing Rules
+Handles SSL / Certificates
+Integrates With Security Services
+Adds and Manages Tags
+Modifies Load Balancer Settings
+ Deletes Resources When Needed
+Creates Service Linked Role
+
+Automatically create, configure, update, and delete AWS Load Balancers and related networking resources.
+
+
+Service Account 
+-------------
+eksctl create iamserviceaccount \
+  --cluster=cwvj-ingress-demo \
+  --namespace=kube-system \
+  --name=aws-load-balancer-controller \
+  --attach-policy-arn=arn:aws:iam::xx:policy/AWSLoadBalancerControllerIAMPolicy\
+  --override-existing-serviceaccounts \
+  --region us-east-2 \
+  --approve
+  
+  root@ip-10-1-1-124:~# kubectl get sa -n kube-system aws-load-balancer-controller -o yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::xx:role/eksctl-cwvj-ingress-demo-addon-iamserviceacco-Role1-HFC1CRaWM1eS
+  creationTimestamp: "2026-02-19T12:39:10Z"
+  labels:
+    app.kubernetes.io/managed-by: eksctl
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  resourceVersion: "3798"
+  uid: e441961a-cba1-4d3f-b0cc-6910367c11b8
+root@ip-10-1-1-124:~# 
+
+
+install ingress controller 
+
+root@ip-10-1-1-124:~# helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=cwvj-ingress-demo \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller \
+  --version 1.16.0
+NAME: aws-load-balancer-controller
+LAST DEPLOYED: Thu Feb 19 12:59:16 2026
+NAMESPACE: kube-system
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+AWS Load Balancer controller installed!
+root@ip-10-1-1-124:~# 
+root@ip-10-1-1-124:~# 
+root@ip-10-1-1-124:~# kubectl get deployments -n kube-system
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+aws-load-balancer-controller   2/2     2            2           73s
+coredns                        2/2     2            2           36m
+metrics-server                 2/2     2            2           31m
+root@ip-10-1-1-124:~# 
+
+**always try things segrigated into namespaces
+
+to switch namespaces*******
+kubectl config set-context --current --namespace=app1-ns
+
+
+root@ip-10-1-1-124:~# kubectl get deployments
+NAME             READY   UP-TO-DATE   AVAILABLE   AGE
+android-deploy   2/2     2            2           12s
+desktop-deploy   2/2     2            2           12s
+iphone-deploy    2/2     2            2           12s
+root@ip-10-1-1-124:~# 
+root@ip-10-1-1-124:~# 
+root@ip-10-1-1-124:~# 
+root@ip-10-1-1-124:~# 
+root@ip-10-1-1-124:~# kubectl get svc
+NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+android-svc   ClusterIP   10.100.15.30    <none>        80/TCP    21s
+desktop-svc   ClusterIP   10.100.241.63   <none>        80/TCP    21s
+iphone-svc    ClusterIP   10.100.23.188   <none>        80/TCP    21s
+root@ip-10-1-1-124:~# 
+root@ip-10-1-1-124:~# 
+root@ip-10-1-1-124:~# kubectl get po -o wide
+NAME                              READY   STATUS    RESTARTS   AGE   IP                NODE                                            NOMINATED NODE   READINESS GATES
+android-deploy-66f688b896-l4d4n   1/1     Running   0          48s   192.168.111.172   ip-192-168-106-245.us-east-2.compute.internal   <none>           <none>
+android-deploy-66f688b896-qzbbn   1/1     Running   0          48s   192.168.84.0      ip-192-168-95-8.us-east-2.compute.internal      <none>           <none>
+desktop-deploy-5759cc578d-9gcc9   1/1     Running   0          48s   192.168.93.126    ip-192-168-88-75.us-east-2.compute.internal     <none>           <none>
+desktop-deploy-5759cc578d-jkvpt   1/1     Running   0          48s   192.168.114.240   ip-192-168-124-229.us-east-2.compute.internal   <none>           <none>
+iphone-deploy-6b97488f64-t8cl2    1/1     Running   0          48s   192.168.120.213   ip-192-168-106-245.us-east-2.compute.internal   <none>           <none>
+iphone-deploy-6b97488f64-v4p7p    1/1     Running   0          48s   192.168.79.94     ip-192-168-95-8.us-east-2.compute.internal      <none>           <none>
+root@ip-10-1-1-124:~# 
+
+
+
+Target Groups created as part of INgress and LB will group pods with IPS in Target Groups 
+Because of VPC CNI plugin 
+
+lb sg will be allowed on port on node sg
+
+if using VPC CNI it will directly route traffic to pods using cluster IP and group them in target groups but if using any other CNI it will increase the HOP 
+as it will include node ip in between service and pod 
+
+
+-->Cert needs to be updated in ingress resource too 
+
+
+User-->https://  --> internet -->Route53 (only if the info is not cached) --> LB(Terminates the connection) --> Target Group -->Pods -->Container
+
+
+Zone File??
+
+Nameserver records and SOA records 
+
+request for cert > get the ARN and update in ingress resource 
+
+We have associated cert with our domain name but not with LB so we need to add our LB details in domain 
+
+name Based Routing:
+--------------------
+iphone.soapfree.online
+android.soapfree.online 
+
+this is path based routing
+and our apex domain will be soapfree.online
+
+so we need to have two names while creating domains one for name based routing and for apex --->Blast Radius is big 
+======================================================================================================
+simple intro
+

@@ -1,0 +1,80 @@
+What is CI (continous Integration):
+Once Developer completes the requierd code we can't delpoy or relase this as a live application as there may be duplicates sensitive data like passwords or even bugs 
+to avoid this going into live application we have a stage in our CI part which are 
+
+
+Stage 1: Code Development 
+Stage 2: Scanning 
+Stage 3: Build 
+Stage 4: Embed
+
+Code Development:
+Developer gets all the requierments and writes the code 
+
+Scan 
+Tools used : SonarQube
+
+usecase : to test code for code smells code bugs and code vulnaribility 
+
+After this we have the next stage called build 
+
+Here we will use tools like "MAVEN" to generate artifacts which may be war,jar or ear file 
+in Maven under root location root/.m2 this is the target folder
+
+Fourth stage is Embed
+Here we will use Docker in the dockerfile we will use artifacts from the .m2 location here 
+
+
+Interview : int stages
+
+once after dev push the code to SCM we have stage as scan (SonarQube) acco to rules which we pass 
+build Maven which builds entire application 
+Embed artifacts in dockerfile
+
+
+Release Team: once the code has been merged they will create the code as sematic version or stable version
+
+How does they conclude what stable version is ?
+They have something called relase cut 
+Release Cut: 
+After or During  the CI Developer may make some changes to the code as per the requierment so we will name the updated code as RC001(Release Cut)
+so we need to do CI and testing for this RC once this is done we can consider it as Stable version and can be released to customer
+
+Hotfix:
+Once the code is released customer might comeback and report bugs or ask for minor changes then we need to perform "Hotfix"
+
+The whole process mentioned above falls under CI 
+
+
+
+
+CD: continous delivery ( on Lower envs)
+====
+
+CD(continous Deployment) on PROD 
+====
+
+Branching Startergy:
+=======================
+We have a master or main branch which head commit on master alwasy points to live/prod env 
+
+We will have seprate branchs for lower environtments where we do all the changes or updates for any change we will create an Future Branch and do the necessary changes
+
+Once it is good to go we will raise PR or MR on DEV branch 
+
+ONce merged all other lower env branches gets merged with that code 
+
+
+Tools Available in Market for CI/CD
+
+1. Azure Devops 
+2.Jenkins
+3.Gitlab 
+4.Github actions
+5.GoCD
+6.Travs CI 
+7.Circle CI 
+
+
+
+

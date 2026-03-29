@@ -1,0 +1,203 @@
+Jenkins Pipeline
+      ↓
+Pre-checks
+      ↓
+Upgrade EKS Control Plane
+      ↓
+Upgrade Node Groups
+      ↓
+Update Manifest Versions
+      ↓
+Deploy Updated Manifests
+      ↓
+Validation & Rollout Check
+
+EKS upgrade is automated through Jenkins pipelines in multiple stages. We first perform compatibility checks, then upgrade the EKS control plane using AWS CLI, followed by managed node group upgrades. After the cluster upgrade, manifests are updated to meet new API or application requirements, and deployments are applied using kubectl or Helm. Finally, rollout status is validated and rollback is triggered automatically if failures occur.
+
+
+Zero-downtime EKS upgrades are achieved by upgrading the control plane first, followed by rolling upgrades of managed node groups. Kubernetes automatically drains old nodes and reschedules pods onto new nodes while maintaining availability through replica sets, rolling update strategy, and pod disruption budgets.
+
+Pod Disruption Budget (VERY IMPORTANT)
+This is a BIG interview point.
+Example:
+minAvailable: 2
+Meaning:
+At least 2 pods must stay running.
+So Kubernetes never kills all pods.
+
+
+
+--------------------------||
+						  ||
+ EKS Upgrade Guide        ||
+						  ||
+--------------------------||
+---------------------------
+ Step 1: Prepare for Upgrade
+
+Before upgrading the control plane, ensure that the Kubernetes versions of your cluster and node groups are aligned.
+
+Check the Kubernetes version of the control plane and nodes:
+
+
+kubectl version
+kubectl get nodes
+
+
+Ensure the managed node groups are running the same Kubernetes minor version as your control plane before proceeding.
+
+---
+
+ Step 2: Review Upgrade Considerations
+
+ 1. Deprecated APIs
+
+Use EKS Cluster Insights to identify deprecated APIs or breaking changes.
+
+ Go to EKS Console → Cluster → Cluster Insights tab
+ 
+ Look for insights with a status of 'Warning' or 'Error' under "Upgrade Insights"
+ These indicate deprecated APIs that may be removed in the next Kubernetes version
+
+ 2. EKS Version Upgrade Path
+
+You can only upgrade one minor version at a time.
+
+Example: To upgrade from '1.28' to '1.30', upgrade first to '1.29', then to '1.30'.
+
+ 3. Node Version Compatibility (Version Skew)
+
+From Kubernetes 1.28 onward, kubelet can be up to 3 minor versions behind the control plane.
+However, best practice is to upgrade node groups to match the control plane version.
+
+ 4. VPC CNI Plugin Version
+
+Ensure the Amazon VPC CNI plugin is updated to avoid networking issues:
+
+
+kubectl describe daemonset aws-node -n kube-system | grep Image
+
+
+If the version is older than 'v1.8.0', update the plugin before proceeding.
+
+---
+
+ Step 3: Upgrade the EKS Control Plane
+
+You can upgrade the control plane using one of the following:
+
+ 'eksctl' (recommended)
+ AWS Management Console
+ AWS CLI
+
+ Upgrade using 'eksctl'
+
+Ensure you are using 'eksctl' version '0.210.0' or later:
+
+
+eksctl version
+
+
+Run the upgrade:
+
+
+eksctl upgrade cluster --name <cluster-name> --version <version-number> --approve
+
+
+---
+
+ Step 4: Update Cluster Components
+
+ 1. Upgrade Worker Nodes Using 'eksctl'
+
+ Option A: In-Place Upgrade for Managed Node Groups
+
+
+eksctl upgrade nodegroup \
+  --name <nodegroup-name> \
+  --cluster <cluster-name> \
+  --kubernetes-version <target-version>
+
+
+This will upgrade the existing node group in place.
+
+---
+
+ Option B: Recommended — Create a New Node Group
+
+
+eksctl create nodegroup \
+  --cluster <cluster-name> \
+  --name <new-nodegroup-name> \
+  --kubernetes-version <target-version> \
+  --node-type t3.medium \
+  --nodes 2 \
+  --nodes-min 1 \
+  --nodes-max 3
+
+
+Then:
+
+ Cordon and drain the old nodes
+ Delete the old node group:
+
+
+eksctl delete nodegroup --cluster <cluster-name> --name <old-nodegroup-name>
+
+
+This approach avoids downtime and ensures a clean transition.
+
+---
+
+ 2. Update Cluster Autoscaler
+
+Find the latest autoscaler version matching your Kubernetes version (e.g., 'v1.30.x'), then update:
+
+
+kubectl -n kube-system set image deployment.apps/cluster-autoscaler \
+  cluster-autoscaler=registry.k8s.io/autoscaling/cluster-autoscaler:v1.30.x
+
+
+---
+
+ 3. Update EKS Add-ons
+
+If you manage EKS add-ons using 'eksctl', run:
+
+
+eksctl update addon --name vpc-cni --cluster <cluster-name> --approve
+eksctl update addon --name coredns --cluster <cluster-name> --approve
+eksctl update addon --name kube-proxy --cluster <cluster-name> --approve
+
+
+---
+
+ 4. Update 'kubectl' (Local Client)
+
+Ensure your 'kubectl' version is within ±1 minor version of your EKS cluster version.
+
+Check version:
+
+
+kubectl version --client
+
+
+Download the latest version:
+
+
+curl -LO "https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl"
+chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+
+
+
+
+
+
+| Case                             | Action                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| Static IPs / IP whitelisting** | Update firewall rules if old node IPs were whitelisted                               |
+| PodDisruptionBudgets (PDBs)**  | May delay draining if not enough replicas                                            |
+| StatefulSets**                 | Make sure `podManagementPolicy` is not blocking recreation                           |
+| Node Affinity / Taints**       | Verify new nodes have required labels/taints for certain pods                        |
+| Persistent Volumes**           | Ensure PVCs are accessible on new nodes (most EBS volumes are zonal, not node-bound) |
+

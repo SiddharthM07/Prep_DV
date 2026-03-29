@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: init-demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: init-demo
+  template:
+    metadata:
+      labels:
+        app: init-demo
+    spec:
+      #  INIT CONTAINER (blocks startup)
+      initContainers:
+        - name: wait-for-service
+          image: curlimages/curl:8.5.0
+          command:
+            - sh
+            - -c
+            - |
+              echo "Checking if external service is reachable..."
+              until curl -sf http://example.com; do
+                echo "Service not ready, retrying..."
+                sleep 5
+              done
+              echo "Service is reachable!"
+
+      containers:
+        # MAIN APPLICATION CONTAINER
+        - name: main-app
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+
+        #  SIDECAR CONTAINER
+        - name: sidecar-logger
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              while true; do
+                echo "Sidecar running alongside main app"
+                sleep 10
+              done

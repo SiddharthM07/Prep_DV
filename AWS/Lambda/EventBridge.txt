@@ -1,0 +1,89 @@
+Amazon EventBridge is a serverless event bus service that routes events from AWS services, custom applications, or SaaS tools to targets like Lambda, SNS, Step Functions, etc.
+
+When something happens in AWS:
+EventBridge catches it → sends it to the right service.
+
+Need to provide an policy to Lambda
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3 :* ",
+                "cloudwatch :* ",
+                "ec2 :* "
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
+Code :
+
+Boto3:
+1️--> Client  (low-level API)
+
+
+client = boto3.client("ec2", region_name="us-east-1")
+You are directly calling AWS APIs.Raw AWS API calls
+
+Returns dictionaries (JSON-like)
+Fast
+Complete AWS feature support
+Used for listing / describing
+
+2️--> Resource (high-level object-oriented)
+ec2_resource = boto3.resource("ec2", region_name="us-east-1")
+Now AWS gives you objects, not raw JSON.You work with an object directly.
+
+Steps:
+1. Describe volumes
+2. Check attachments
+3. Store unattached IDs
+4. Delete using resource API
+
+
+"""
+import json
+import boto3 
+import time
+def lambda_handler(event, context): #Every Lambda starts here.
+    client = boto3.client("ec2", region_name="us-east-1")  #low-level API calls
+    resp = client.describe_volumes().get("Volumes", []) #fetch all EBS volumes Get the list of volumes from the response. If for some reason the key doesn’t exist, return an empty list instead of throwing an error.”
+    unattachedvols = [] #create empty list
+    time.sleep(30) //not necessary
+    for vol in resp:
+        if len(vol["Attachments"]) == 0:  #if not attached No attachments = volume not used
+            volid = vol["VolumeId"]  #stores the unattached volume id in volid array
+            print(f"Volume {volid} is not attached and will be deleted")
+            unattachedvols.append(vol["VolumeId"])
+        else:
+            volid = vol["VolumeId"]
+            """print(f"Volume {volid} is attached")"""
+
+    print(f"The Volumes which are availible are {unattachedvols}")
+    ec2_resource = boto3.resource("ec2", region_name="us-east-1") #Give me EC2 objects I can interact with.
+    for vol in unattachedvols:
+        volume = ec2_resource.Volume(vol) #adds real volumes in volume variable through loop 
+        volume.delete()
+
+"""        
+
+
+
+IAM assignment code 
+
+"""
+import json
+import boto3
+
+def lambda_handler (event, context):
+    client = boto3.client ('iam')
+    uname = event ['detail'] ['requestParameters'] ['userName' ]
+    client.put_user_permissions_boundary (
+    UserName=uname,
+    PermissionsBoundary='POLICY-ARN'
+)
+
+"""

@@ -1,0 +1,355 @@
+#HOSTPATH 
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: containerd-deamonset
+  labels:
+    app: containerd-deamonset
+spec:
+  selector:
+    matchLabels:
+      app: containerd-deamonset
+  template:
+    metadata:
+      labels:
+        app: containerd-deamonset
+    spec:
+      containers:
+      - name: troubleshooting
+        image: kiran2361993/troubleshootingtools:v1 
+        volumeMounts:
+          - name: containerdsock
+            mountPath: "/run/containerd/containerd.sock"
+      volumes:
+        - name: containerdsock
+          hostPath:
+            path: /run/containerd/containerd.sock
+
+
+#commands to install
+# apt-get update -y && apt-get install -f containerd
+# ctr image pull docker.io/library/hello-world:latest
+# ctr container ls
+---
+#EBS Volume
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  labels:
+    app: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+      name: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+        name: mongodb
+    spec:
+      containers:
+      - image: mongo
+        name: mongodb
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
+      volumes:
+      - name: mongodb-data
+        awsElasticBlockStore:
+           volumeID: vol-016f2bbb6f3e82c1d
+           fsType: ext4
+      nodeSelector:
+          kubernetes.io/hostname: i-0eabc073991b3166c
+
+
+# db.movie.insert({"name":"Fast & Furious 1"})
+# db.movie.insert({"name":"Fast & Furious 2"})
+# db.movie.insert({"name":"Fast & Furious 3"})
+# db.movie.insert({"name":"Fast & Furious 4"})
+# db.movie.insert({"name":"Fast & Furious 5"})
+# db.movie.insert({"name":"Fast & Furious 6"})
+
+# > show dbs
+# > show collections 
+# > db.movie.find()
+
+---
+
+#PV
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: aws-pv1
+  labels:
+    type: aws-pv1
+spec:
+  storageClassName: gp2
+  persistentVolumeReclaimPolicy: Delete
+  capacity:
+    storage: 2Gi
+  accessModes:
+  - ReadWriteOnce
+  awsElasticBlockStore:
+    volumeID: vol-0d583b79033e9dfa2
+    fsType: ext4
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: aws-pv2
+  labels:
+    type: aws-pv2
+spec:
+  storageClassName: gp2
+  persistentVolumeReclaimPolicy: Delete
+  capacity:
+    storage: 4Gi
+  accessModes:
+  - ReadWriteOnce
+  awsElasticBlockStore:
+    volumeID: vol-03383941a331ed8aa
+    fsType: ext4
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: aws-pv3
+  labels:
+    type: aws-pv3
+spec:
+  storageClassName: gp2
+  persistentVolumeReclaimPolicy: Delete
+  capacity:
+    storage: 6Gi
+  accessModes:
+  - ReadWriteOnce
+  awsElasticBlockStore:
+    volumeID: vol-05c109790d96ccbed
+    fsType: ext4
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: aws-pv4
+  labels:
+    type: aws-pv4
+spec:
+  storageClassName: gp2
+  persistentVolumeReclaimPolicy: Delete
+  capacity:
+    storage: 8Gi
+  accessModes:
+  - ReadWriteOnce
+  awsElasticBlockStore:
+    volumeID: vol-07d7e78d1a0c3e62a
+    fsType: ext4
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: aws-pv5
+  labels:
+    type: aws-pv5
+spec:
+  storageClassName: gp2
+  persistentVolumeReclaimPolicy: Delete
+  capacity:
+    storage: 10Gi
+  accessModes:
+  - ReadWriteOnce
+  awsElasticBlockStore:
+    volumeID: vol-0d0864d2cf3cef1c1
+    fsType: ext4
+
+
+
+
+# aws ec2 create-volume --volume-type gp2 --size 2 --availability-zone us-east-1a --tag-specifications 'ResourceType=volume,Tags=[{Key=KubernetesCluster,Value=cloudvishwakarma.in},{Key=Name,Value=aws-pv1}]' && aws ec2 create-volume --volume-type gp2 --size 4 --availability-zone us-east-1a --tag-specifications 'ResourceType=volume,Tags=[{Key=KubernetesCluster,Value=cloudvishwakarma.in},{Key=Name,Value=aws-pv2}]' && aws ec2 create-volume --volume-type gp2 --size 6 --availability-zone us-east-1a --tag-specifications 'ResourceType=volume,Tags=[{Key=KubernetesCluster,Value=cloudvishwakarma.in},{Key=Name,Value=aws-pv3}]' && aws ec2 create-volume --volume-type gp2 --size 8 --availability-zone us-east-1a --tag-specifications 'ResourceType=volume,Tags=[{Key=KubernetesCluster,Value=cloudvishwakarma.in},{Key=Name,Value=aws-pv4}]' && aws ec2 create-volume --volume-type gp2 --size 10 --availability-zone us-east-1a --tag-specifications 'ResourceType=volume,Tags=[{Key=KubernetesCluster,Value=cloudvishwakarma.in},{Key=Name,Value=aws-pv5}]'
+
+
+---
+#PVC
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: task-pv-claim1
+spec:
+  storageClassName: gp2
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: task-pv-claim2
+spec:
+  storageClassName: gp2
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: task-pv-claim3
+spec:
+  storageClassName: gp2
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: task-pv-claim4
+spec:
+  storageClassName: gp2
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: task-pv-claim5
+spec:
+  storageClassName: gp2
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+
+---
+#Claims
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  labels:
+    app: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+      name: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+        name: mongodb
+    spec:
+      containers:
+      - image: mongo
+        name: mongodb
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: mongodb-data1
+          mountPath: /data/db
+        - name: mongodb-data2
+          mountPath: /tmp/db1
+        - name: mongodb-data3
+          mountPath: /tmp/db2
+        - name: mongodb-data4
+          mountPath: /tmp/db3
+      volumes:
+      - name: mongodb-data1
+        persistentVolumeClaim:
+           claimName: task-pv-claim1
+      - name: mongodb-data2
+        persistentVolumeClaim:
+           claimName: task-pv-claim2
+      - name: mongodb-data3
+        persistentVolumeClaim:
+           claimName: task-pv-claim3
+      - name: mongodb-data4
+        persistentVolumeClaim:
+           claimName: task-pv-claim4
+      nodeSelector:
+          kubernetes.io/hostname: i-0eabc073991b3166c
+
+---
+#storageclass
+
+#Creating gp2 storage class and making it default
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: gp2
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+  fsType: ext4 
+
+#Creating io storage class
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: io1
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: io1
+  iopsPerGB: "10"
+  fsType: ext4
+
+---
+#emptydir
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: troubleshooting
+          image: kiran2361993/troubleshootingtools:v1
+          volumeMounts:
+            - name: myemptydir
+              mountPath: /etc/myemptydir
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /tmp/myemptydir
+              name: myemptydir
+      volumes:
+        - name: myemptydir
+          emptyDir: {}

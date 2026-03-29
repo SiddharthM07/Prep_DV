@@ -1,0 +1,143 @@
+Problem one of the AWS server is acting weird some hacker got access to it ...
+
+Solution 
+
+Use Cloud Trail-->to enable Gaurd Duty 
+Trigger Cloudwatch Event-->SNS to send mail -->Lambda to secure or isolate the instance
+
+Cloudtrail Delivers API call history acrosss AWS 
+
+Gaurd Duty -->AWS will monitor env using CloudTrail VPC FLowlogs and DNS logs
+Smart AI security Gaurd Watches the logs learns from them and flags anything sus 
+like hacker or malware
+analyze cloudtrail VPC flow log DNS logs using mL detetct anomoly like port scanning known threat actors
+
+IAM ROle for Lambdafunction>Lambda-->Lambda Basic execution role 
+
+GuardDuty Detects Threat
+
+GuardDuty continuously analyzes:
+
+VPC Flow Logs
+
+CloudTrail logs
+
+DNS logs
+
+Example detection:
+
+Trojan:EC2/BlackholeTraffic
+
+Meaning:
+
+EC2 instance is communicating with known malicious IP.
+
+GuardDuty Generates Finding (JSON)
+
+GuardDuty creates a finding like:
+
+{
+  "type": "Trojan:EC2/BlackholeTraffic",
+  "resource": {
+    "instanceDetails": {
+      "instanceId": "i-123456"
+    }
+  },
+  "service": {
+    "action": {
+      "networkConnectionAction": {
+        "remoteIpDetails": {
+          "ipAddressV4": "185.x.x.x"
+        }
+      }
+
+
+EventBridge Rule
+
+Your rule:
+
+{
+ "source": ["aws.guardduty"],
+ "detail-type": ["GuardDuty Finding"],
+ "detail": {
+   "type": ["Trojan:EC2/BlackholeTraffic"]
+ }
+}
+
+What it does:
+
+Filter ONLY this type of finding.
+
+It does NOT contain IP logic.
+
+EventBridge forwards FULL finding JSON to Lambda.
+
+Lambda reads:
+
+detail.resource.instanceDetails.instanceId
+detail.service.action.networkConnectionAction.remoteIpDetails.ipAddressV4
+
+So Who Knows the Malicious IP?
+
+Answer:
+
+GuardDuty detection engine.
+
+AWS maintains threat intelligence lists.
+
+GuardDuty compares traffic against:
+
+known botnets
+
+C2 servers
+
+malware IPs
+
+BlackholeTraffic” Actually Means
+
+It usually means:
+
+EC2 talking to known malicious destination.
+
+Not necessarily inbound attack.
+
+Could be:
+
+malware installed
+
+compromised instance
+
+botnet communication
+
+What Lambda Usually Does
+
+Lambda gets:
+
+Instance ID
+Suspicious IP
+
+Then performs actions like:
+
+🟢 Option 1 — Modify Security Group (Most Common)
+
+Remove internet access:
+
+Detach SG
+Attach quarantine SG
+🟢 Option 2 — Add NACL Rule
+
+Block malicious IP.
+
+🟢 Option 3 — Stop Instance
+
+Emergency isolation.
+
+https://github.com/julien-muke/aws-ai-threat-detection-pipeline
+
+Explination:
+==============
+In our OTT application, EC2 instances were internet-facing and handled high traffic volumes. We implemented GuardDuty-based automation so that if suspicious traffic like Trojan or blackhole communication was detected, EventBridge triggered Lambda to isolate the instance automatically. This reduced incident response time and prevented potential service impact or lateral movement.
+
+Why not Polling GuardDuty API?
+
+Polling means lambda will run for every x minutes so incase the attack happens now and lambda will be triggering after 3-5 minutes that's too late and continuous API calls lambda invokes costly affair

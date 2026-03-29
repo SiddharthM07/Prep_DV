@@ -1,0 +1,12 @@
+How does Lambda works?
+Lambda starts with a event. The event triggers the lambda to do something to execute or invoce the code we provide.
+The source of the event can be another AWS service such as s3 or API gateway also it can be triggered from a stream of data or queues.
+
+Lambda supports push and pull model 
+In the push model, the event source directly invokes Lambda whenever something happens.
+
+In the pull model, Lambda continuously polls the event source for messages.
+Can be done on services like below:
+SQS	
+Kinesis	
+DynamoDB 

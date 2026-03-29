@@ -1,0 +1,99 @@
+Scaling Policies/Algorithms:
+
+Autoscaling groups:
+So assume a scenario where we have an application with a fixed set of users who are using it.
+In this case we will create a specific instances to cater the requests from the particular goup.
+But this is not the case in real world we can't have an exact estimate on how many exact requests will be made on a particular point of time to our application
+
+So we can't have large number of instances running to cater only few connections that's a loss and we can't do the reverse 
+
+For this exact reason we can use EC2 Autoscaling Groups 
+
+What is an Autoscaling Groups?
+
+We will create an min max and desired according to our application requierments
+Two types of ASG
+Vertical and Horizontal
+
+Launch Template
+It is a template for configurations for all our EC2 instances we use this to create our ASG
+It contains AMI+instance type,EC2 user Data,EBS volumes,Security Groups ,SSH Key pair ,IAM Roles for our instances,Network Subnets info,Load info, Scaling Policies
+
+
+Min --Minumum Number of instance I need in my ASG assume 3
+
+Max --Maximum number of instances lets assume 10 
+
+Desired Capacity--It's basically how many instances do you need to start with when you create a ASG how many instacnes do you need 
+
+If load increares instances may go up till 10 and if it's low it'll come down to 3 
+
+
+
+Create Application Loadbalancer
+
+I already have an VPC and subnet created I created each subnet in different AZ
+And an IG with the route added in route table
+
+As we created ALB and TG Lets move forward to create ASG 
+
+For ASG we need Launch Temaplate dont confuse TG with Launch template
+
+As of now we'll creates ASG with only 1 instacne Desired Min and Max will be 1 
+
+Now my instance has been created and ready to act as a webserver
+
+
+So as we have desired min and max as 1 now assume if we want our desired capacity to be 2 it wont work because our max capacity is 1
+
+So just keep it as a rule that desired capacity should be <= Max capacity 
+
+Sticky Sessions: 
+TO attach the traffic to only once instance 
+
+Connection Draining Period: Requestes that are alredy made to our EC2 instance before Scaling down
+
+So far we're manually changing the scaling(Desired Instances) but how to make that happen on it's own?
+For that we use something called Autoscaling Policies
+
+-->Target Tracking 
+We have a target and we are tracking the particular target 
+for example I want my average CPU of all the instances should be >=60% if it's more scale up 
+
+-->Simple/Step Scaling 
+Based on a step we are scaling up or Down 
+Which Step for example when a cloud watch alarm is triggered
+Like if CPU is > 60% scaleup
+if CPU is <20 % scale down 
+
+-->Scheduled Actions 
+
+Anticipatory we use usage patterens like scaleup on BlackFridays or Republic Days 
+or Scale down after 10 PM 
+
+-->Predictive Scaling 
+We use ML for this to analyze the historical load like what's the load for the previous week and based on that it'll forecast the future load and scale up/down based on that 
+
+
+Some Important Metrics to Scale:
+
+CPU Utilization
+Request Count Per Target
+Average Network in and out 
+Any Custom Metrics 
+
+
+Scaling Cool Down :
+
+
+
+Dynamic Scaling policy Demo:
+
+Now lets give stress to our 1 instacne that's running 
+
+
+For Notifications:
+Create SNS and and add that while creating ASG 
+Create Cloudwatch Alarm 
+
+Step Scaling-->Alarm (CPU)

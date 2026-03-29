@@ -1,0 +1,257 @@
+So assume we are building something on our own machine(laptop) and we want to deploy/host this on a server how can we acheive this ?
+By SSH into the server and placing the code there ?
+This is practical but if there's only one server and the scale of the project is small 
+When the scale increases and instances go up we may face below chalanges 
+No single source of truth for the code
+No version history or easy rollback
+High risk of human error during manual changes
+Not scalable across multiple servers
+No audit trail or accountability
+Direct production access increases security risk
+Difficult to reproduce or debug issues
+Changes are inconsistent across environments
+
+So we use something like Github which will be the single source of truth ...each and every update on the code will be stored and each and every version will be in our commit history.
+
+Here Github is elminating the risk of the above mentioned cons but what if our application needs regular updates and mantainnce...every small change needs to be pushed into our github main branch and it should be pulled from our production and this process will become tedious at some point of time.
+
+To eliminate this exact problem we have CI/CD 
+
+There are many tools available in market to fullfill this CI/CD ...
+Here's lets talk about one of the most widely used tool github actions in particular.
+
+Lets keep it simple and straight 
+
+In plain english ...we will provide github actions a set of steps to be executed in a order 
+inside Github there's something called "runners" which executes all the steps on the server we want to deploy on 
+
+That's it as simple as that 
+
+Need to create a folder inside the root of the project as .github(should be this only nothing else)
+Under this we need to create workflows>whatever yamls are under this workflows directory github will treat them as actions
+
+
+We can employ actions for various github actions :
+Workflow: .github/workflow directory
+
+Jobs: We can define one or more jobs in a workflow which consist of series of steps which are executed on a runner
+
+Runner:a virtual machine which runs our workflows on triggering 
+
+Github automatically provisons runners for each job based on the runs-on configuration specified at the job level 
+
+Github Hosted Runners: Github will host macOS on it's own cloud where as others are executed on Azure
+
+We have two types of Runners :
+Github Hosted Runners :
+Provided by Github
+Clean VM for every run
+Cannot customize  beyond seletcing the available ones
+Provided as part of Github subsciptions upto a limit
+
+Self Hosted Runners :
+Managed and created by us
+Can run multiple jobs on same VM everytime
+
+Main Branch -->Prod
+
+Feauter Branch -->New Changes --> Commit Changes-->Approval-->Approved -->CI Triggered-->Merged into Main Branch 
+
+Merging in Main Branch Triggeres CI pipeline to ensure code changes from Branch A and B are working together 
+This goes on continously CI
+
+CD
+==
+Once the changes gothrough CI pipeline they will be deployed into a staging or lower environment(replica of Prod) 1st and testings are done to make sure everything is fine.
+Once all the testings are done and everything looks fine it will then be merged into Prod Pipeline and CI will be triggered
+Once CI is passed and everything looks good it will then deployed into PROD 
+
+This Whole process of manual approval prior to prod deployment is called continous delivery
+
+
+Key Components of Github Actions:
+
+Workflow 
+A repo can have multiple workflows each of which can run in response to a specific event occuring in our repo
+Jobs
+These are the building blocks of workflows each job will be associated with a runner which can be github hosted or self hosted
+
+runs-on attribute
+
+steps
+These are individual tasks or actions that makeup a job these are executed sequiantly within a jobs runner env
+These can include commands,actions,scripts allowing us to automate specific action
+
+EX:
+name: My First Workflow
+
+on: push
+
+jobs:
+  First_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome Message
+        run: echo "Hello There !!!"
+
+      - name: List Files
+        run: ls
+
+      - name: Read README
+        run: cat README.md
+
+Note: The above code will fail as we don't have the repo inside our runner we need to checkout the github repo prior execution
+
+Actions:
+---------
+These are pre-built reusable automation components desinged for specific tasks 
+There are some pre-defnined Actions created by github and other community 
+If we want to define action we need to use 
+
+"uses" instead of run 
+eg: - name: Checkout Repo 
+      uses: actions/checkout@v4
+Working directory is '/home/runner/work/actions-1/actions-1'      
+
+We can define these actions in steps block as below 
+steps:
+  - uses: actions/checkout@v3.6.0
+  - uses: actions/checkout@main
+  - uses: actions/checkout@shavalue --> we can use these for more dependable versions 
+
+
+3rd Party tools
+==================
+To run any 3rd party library which is not installed prior to running the step needs to be installed and then execute the desired step
+
+
+Workflow with Multiple jobs:
+----------------------------
+We've so far used single job but we can also have multiple jobs in a single pipeline
+
+name: My First Workflow
+
+on: push
+
+jobs:
+  First_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome Message
+        run: echo "Hello There !!!"
+    Second_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome Message
+        run: echo "Hello There !!!"
+    Third_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome Message
+        run: echo "Hello There !!!"
+
+We will see three jobs and they will run in parallel by default they wont be waiting for any other job they'll run in parallel
+But we want our workflow in such a way that it should run the second job only after the 1st one is successful.
+
+We will pull the git repo -->create artifacts ...Everystep is dependent on the previous job so it would fail in this way.
+
+Needs Syntax with multiple Jobs to run in sequence
+---------------------------------------------------
+name: My First Workflow
+
+on: push
+
+jobs:
+  First_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome Message
+        run: echo "Hello There !!!"
+    Second_job:
+    needs: First_job (Job name of First on)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome Message
+        run: echo "Hello There !!!"
+    Third_job:
+    needs: [First_job,Second_job]Runs only after 1st job and second job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome Message
+        run: echo "Hello There !!!"
+
+here if First_job fails the Second_job will be skipped as it is manadatory to be completed
+and also the files are details arent  being shared across the job here 
+
+So to overcome this we have to upload the build/artifacts from one step to another step
+For this we have actions in place 
+
+We have upload action to "upload" the artifact and download for "download" 
+
+We can upload file/folder/mulitple files in a directory and also use wildcards to upload selected files/artifacts
+"""""
+steps:
+- run: mkdir -p path/to/artifact
+- run: echo hello > path/to/artifact/world.txt
+- uses: actions/upload-artifact@v4
+  with:
+    name: my-artifact
+    path: path/to/artifact/world.txt
+
+""""""
+
+"""
+deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: maven-web-application
+          path: /opt
+
+      - name: List Artifacts
+        run: ls /opt
+"""""""
+
+whatever artifacts are being uploaded will be enabled to download into our local machine these will be stored for 90 days and also can be increased.
+
+
+
+Env Variables
+==============
+Three types of env Variables 
+step level,Job level and workflow leve
+But if we want to store a secret like passwords or any other variable it will be visible in logs
+To avoid that we can use secrets to store the sensitive values
+
+
+Repo Level secrets:
+====================
+We can store secret at organizational level,Repo Level or env level
+settings>Secrets and variables -->Actions
+secret or variable will be stored in the above path 
+variable :
+username={{vars.DOCKER_USERNAME}} --to refer repo env variables
+Secret:
+password=${{secret.DOCKER_PASSWORD}} -- to refer repo secrets
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

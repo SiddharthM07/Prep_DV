@@ -1,0 +1,18 @@
+AWS WAF is a web application firewall used to protect applications from common web exploits by inspecting incoming HTTP and HTTPS requests. It works with services like ALB, CloudFront, and API Gateway and uses rule-based filtering to block malicious traffic such as SQL injection, XSS, or abnormal request rates.
+
+WAF Shield
+WAF : Web application Firewall
+to avoid DDOS attack or block any region IP site etc...
+
+DDOS: Distributed Denail of Service blocks traffic
+SQL injection/Cross site scripting
+
+to  block region and Ip's we can use WAF and Shield
+
+ipset-->set of ip addresses which we wanna block
+ipset>Ip>add rules>
+
+Security Group → network level (IP/port)
+WAF → application level (HTTP requests)
+
+WAF mainly protects against Layer-7 attacks, while services like AWS Shield handle Layer-3/4 DDoS protection

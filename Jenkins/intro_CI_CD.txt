@@ -1,0 +1,46 @@
+SDLC--Software Development lifecycle
+it is a modren framwork that defines how your application should work 
+
+
+Artifact --Build output--war jar exe go binary
+
+Middleware--Sits between applicationcode  and runtime
+
+Java ---jar war ear only war and ear req middleware 
+compiler is javac 
+
+Build tools --Maven Gradle 
+Compiled languages:
+Containerized Application-->source code --Artifact--Dockerfile--container image--deployment
+Non-Containerized Application-->source code --Artifact--deployment on VM(All necessary dependencies must be present on VM)
+
+Interpreted languages:
+source code--Dockerfile(requierments.txt)--container images--containers deployment
+
+non-Containerized workloads
+source code--executed directly by interprer--VM
+
+Gitflow Based CI/CD --multiple long lived branches points to multiple environments
+CI trigger PRs between branches..build only once in DEV 
+
+Trunk-Based : Single trunk main as source of truth
+Short Lived feature branches...CI triggers PR into main branch
+
+Stable Application -->uses Gitflow based strategy 
+Frequent updated -->Short Lived (Fast)
+
+Flow:
+
+Developer push in feature Branch --> if CI is green run CI in DEV for DEV + Feature-->if green Merge PR into DEV and deploy 
+note: Image Digest are immutable they are generated once we push the image into repo dockerhub
+other tags --commit tag version 
+
+Now once deployed in DEV we will have promotional PR in Stage
+
+Note: Manifest (conatins all the details like commit-sha image name digest tags timestamp for the image we 
+generated )
+
+In most CD failures the culprits are fairly consistent: missing or wrong permissions (RBAC, registry access), resource constraints like insufficient CPU, memory, or unavailable GPU/SSD nodes, and application misconfigurations such as bad image references, broken Secrets/ConfigMaps, or failing probes. On top of this, pipeline or tooling drift (e.g., outdated artifacts, Helm chart mismatches, or GitOps sync errors) often cause deployments to break even when builds were green. Together, these form the bulk of CD failure scenarios teams face in practice.
+Note: Many of these checks can be shifted  into CI itself, so usual culprits are caught early. For example, CI can verify if required images exist, manifests render correctly, or even query the cluster to confirm that sufficient resources (like GPU nodes or storage classes) are available before promoting to CD. This reduces surprises during deployment."
+
+in staging the merge into staging branch happens post deployment as we need to check whether the new update code really works to gether or not

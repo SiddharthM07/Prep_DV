@@ -1,0 +1,83 @@
+Why and what of ingress?
+In production grade setups we have startegies like Cluster Autoscaler and Karpenter underneath which will scale nodes based on application load nodes will change and IP's too
+So we can't ask our end users to access our application using nodeIP's and nodePorts which are tend to change it's not practical 
+So one thing's for sure we cannot use NodePort for accessing our application 
+
+Loadbalancer Service ?
+It creates a seprate Loadbalancer for each it creates a leayer4 Loadbalancer(Transport Layer) no understanding of HTTP or any layer7 protocals
+If we have 20 applications we cannot create 20 Loadbalancer which cost you hourly it's bruns your clients pockets
+This is an impractical approach 
+
+We cannot do TLS termination in HTTPS traffic is encrypted so the LB should know how to decrypt it
+
+Decoupling:
+We dont want our application to do anything else except application logic
+The more components we add more upgrade,vulnerbilites,patchings.
+
+So we need something which is aware of Load7 loadbalancing it should be able to do path based routing 
+
+So based on all these requierments k8's ingress was born
+
+So what is ingress?
+Ingress is a k8's API object that defines HTTP and HTTPS routing rules for external traffic 
+It acts as a Layer 7 LB directing request based on hostnames,Paths or application layer attributes
+
+Note: If we need intracluster communication we can use clusterIP for that 
+
+
+What is ingress controller?
+ingress resource is built in kubernetes but not controller it must be installed sepratly
+ingress object doesnt server any purpose without ingress controller 
+It runs as a pod inside the cluster
+Some popular ingress controller like:
+AWS Loadbalancer Controller 
+Nginx
+Traefik
+Istio ingress gateway 
+Haproxy
+
+
+We create an ingress resource and as soon as it sees a ingress controller it creates a Loadbalancer which will be configured
+based on the configurtaion we defined 
+
+
+Steps:
+~~~~~~~~~~~~~
+Nodes on differnt AZ's idea is spread all pods on different nodes for HA 
+
+-->Create a IAM policy 
+Below policy is to create LB so we have crated this so that our ingress controller can create LB in our AWS account
+ aws iam create-policy \
+  --policy-name AWSLoadBalancerControllerIAMPolicy \
+  --policy-document file://iam_policy.json
+{
+    "Policy": {
+        "PolicyName": "AWSLoadBalancerControllerIAMPolicy",
+        "PolicyId": "ANPA6GBMHV7KLKGBSZABF",
+        "Arn": "arn:aws:iam::975050354644:policy/AWSLoadBalancerControllerIAMPolicy",
+        "Path": "/",
+        "DefaultVersionId": "v1",
+        "AttachmentCount": 0,
+        "PermissionsBoundaryUsageCount": 0,
+        "IsAttachable": true,
+        "CreateDate": "2026-02-17T14:21:57+00:00",
+        "UpdateDate": "2026-02-17T14:21:57+00:00"
+    }
+}
+
+Now we are creating IAM Service Account
+
+
+User Request
+     ↓
+Ingress Controller
+     ↓
+Auth Check (SA)
+     ↓
+Authorization Check
+     ↓
+Service
+     ↓
+Pod
+“Ingress handles edge authentication while application enforces business authorization.”Ingress performs JWT validation and TLS termination. Only authenticated requests are forwarded to backend services, and role-based authorization is enforced using token claims.
+After login, the authentication service issues a JWT token. The client includes this token in API requests, and it’s validated at ingress or backend services. The token carries user identity and subscription claims, allowing stateless authorization across microservices.”

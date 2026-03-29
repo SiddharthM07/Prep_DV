@@ -1,0 +1,107 @@
+VI
+===
+Difference between ingress controller and ingress 
+How ingress controller is different from ingress 
+Can ingress controller manage SSL 
+ingress controller works on which layer ?
+You have to implement end to end SSL internally on application which is being exposed using ingress controller how can we acheive ?
+multiple types of SSL termination ?
+How can you consume secrets and How cluster will know these are the screts in AWS secret manager ?
+Application needs to connect to DB and DB is in RDS how will pods consume secrets
+Server is not booting Booting process in Linux ?
+Steps involved in booting ?
+EFS/EBS NACL ?
+If we want to connect aws to external sources how can we achieve that ?
+
+
+ADP
+=====
+Have you done any automation task like if a task is taking some manual human efforts have you automated any tasks to reduce the manual efforts ?
+I have a application 10 container pods which are spread across 5 worker nodes one worker node got crahsed what happens to my container pods ?
+Before spinning up on the other worker nodes will it check any other things ?
+What kind of loadbalancer do you use in your project what are the advantages over others in market ?
+I want to make my application high availaiblity how can I deploy that application ?
+I have an application deployed on multiple regions I want to route the request to nearest region available ?
+I have an application I want to restrict from particular geo loactaion ?
+What are all the ways or algorithms you use to impliment the autoscaling ?
+What are some critical problem you faced and how did you resolved it ?
+
+
+Deloitte(Experian)
+==========
+I need to connect a EC2 to S3 currenlty we're using NAT to conect it but it is incurring some charger is there any way to avoid that if yes whats that?
+
+What's the difference between gateway and interface endpoint?
+
+In which scenrios we will acitvely use SSM 
+We have 52 EC2 instance are there and we want to deploy a script how would you do that ?
+ 
+
+In which scenario will you NACL and SG which one have heigher presidence ?
+
+My Team want's to containerize 15 application some are simple and some are complex how would you decide between ECS and EKS of these and why ?
+
+Can you just walk me through the troubleshooting steps you take when you see a pod in crashloopbackoff which commands will you use ?
+
+Code --Terraform-- Create a IAM role using Module  
+
+What's the purpose of Module in terraform ?
+
+How woulld you secure the k8s clusetr ?
+
+How would you implement zero Downtime Deployment?
+
+How do you secure secrets in K8s?
+
+What happens if API server is donw in EKS ?
+
+PODS in k8s are they static and Dynamic ?
+
+As we grow there would be load in k8s cluster how enable monitoring so that we dont get into issues ?
+
+Now to create a EKS cluster what are the mandatory IAM roles are requierd ?
+
+Why there's a sudden shift of most of the organization to EKS now ?
+
+Can a single cluster be used by multiple clients --like there's UAT will that UAT cluster can we create multiple nodes and namespaces ?
+
+Can that be cluster access by multiple teams ?
+
+You have been given an IAM role with full admin access by mistake he deleted S3 so to avoid that situation what future will you take ?
+
+what are the Encryptions we can use for S3 bucket ?
+
+Why do we need KMS ?
+
+Jenkins is used for CI/CD right why do we need it like can't we do things without Jenkins?
+
+In Jenkins Pipeline we need to provide some secrets to connect the AWS account where do we store them and what would be the type of credential type will you use?
+
+
+
+If credentials are stored in Credentials will it be displayed in pipeline logs or anywhere ?
+
+
+
+Round 2--Deloitte(Experian)
+
+
+I have a applications which is private and is only being  used by internal team.. Now I want to enable failover for that is it possible to create failover for private LB's?
+
+How many AWS accounts do you use in your current project and how would access them if you want to enable something in multiple accounts ?
+
+In k8s deployment what make a pod to be alive even after its down what option or paramter ?--Restart policy 
+
+I have a S3 bucket in account B and my EC2 instance is in private subnet in account A how to enable connection between them 
+
+Some questions on Transit Gateway and VPC peering --have you connected a on-prem instance with EC2 ?
+
+I have an requierment to deploy an application from scracth no VPC no EKS so how would you approach that what precautions would you take ?
+
+Asked to write A terraform module and later call it to create a ec2 
+
+I have few CIDR ranges for subnet which are stored in variable.tf now I want to create resource using them one by one how would you acheive --Element Function
+
+If my VPC IP's are drained can we expand them ?
+
+Difference between interface and Gateway endpoints followup why will Interface endpoint creates a ENI ?

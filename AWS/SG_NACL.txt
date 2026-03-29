@@ -1,0 +1,19 @@
+Stateful and stateless Firewalls:
+
+A stateful firewall tracks active connections and automatically allows return traffic, whereas a stateless firewall evaluates each packet independently and requires explicit rules for both inbound and outbound traffic.
+stateful
+
+SG --> Statefull Firewall 
+if inbound is allowed outbound is allowd 
+NACL --> Stateless Firewall
+outbound is not allowed even inbound is allowed
+
+Ping is not a TCP protocal
+wget is a TCP protocol
+
+
+ephemeral ports:1024–65535
+
+EC2 outbounds are checked when EC2 starts connection but not on replies
+
+NACL have allow and deny options 

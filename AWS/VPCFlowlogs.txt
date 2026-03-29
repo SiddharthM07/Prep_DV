@@ -1,0 +1,38 @@
+Network traffic logs for your VPC.
+They capture metadata about IP traffic going in and out of:
+VPC
+Subnet
+Network Interface (ENI)
+
+you can enable at:
+Level	Use Case
+VPC	Entire network monitoring
+Subnet	Specific subnet monitoring
+ENI	Single instance troubleshooting
+
+Info captured 
+Source IP
+Destination IP
+Source Port
+Destination Port
+Protocol (TCP/UDP)
+Traffic direction
+ACCEPT / REJECT
+Bytes transferred
+
+Ex
+10.0.1.5 → 8.8.8.8:443 ACCEPT
+
+
+Flow logs DO NOT show:
+
+packet payload
+request data
+URLs
+application logs
+Only metadata.
+
+Flow logs can go to:
+S3 or cloudwatch 
+
+cloudwatch is most common

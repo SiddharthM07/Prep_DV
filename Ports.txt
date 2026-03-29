@@ -1,0 +1,57 @@
+Core Networking Ports (MUST KNOW)
+Port	Protocol	Usage
+22	SSH	EC2 login / Linux access
+80	HTTP	Web traffic
+443	HTTPS	Secure web traffic
+53	DNS	Route53 / DNS resolution
+
+AWS / Cloud Common Ports
+EC2 / Load Balancer
+Port	Usage
+80 / 443	ALB / NLB traffic
+22	SSH to EC2 (usually restricted)
+
+RDS Databases (VERY COMMON)
+Port	Database
+3306	MySQL / Aurora MySQL
+5432	PostgreSQL
+1433	MSSQL
+1521	Oracle
+27017	MongoDB
+
+DevOps Tools Ports (SUPER IMPORTANT)
+
+These are asked a LOT.
+
+Port	Tool
+8080	Jenkins
+9000	SonarQube
+3000	Grafana
+9090	Prometheus
+5601	Kibana
+9200	Elasticsearch
+
+Kubernetes Ports (VERY IMPORTANT)
+
+For DevOps interviews — MUST know basics.
+
+Port	Component
+6443	Kubernetes API Server
+10250	Kubelet
+30000–32767	NodePort range
+2379–2380	etcd
+
+Web & Reverse Proxy Ports
+Port	Usage
+80	HTTP
+443	HTTPS
+8080	App servers / Tomcat
+8443	Secure app port
+
+6379	Redis
+11211	Memcached
+5672	RabbitMQ
+9092	Kafka
+
+22	     SSH
+3389	RDP (Windows EC2)

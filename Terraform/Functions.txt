@@ -1,0 +1,96 @@
+aws_region         = "us-east-1"
+vpc_cidr           = "172.18.0.0/16"
+vpc_name           = "DevSecOps-Vpc"
+key_name           = "SecOps-Key"
+azs                = ["us-east-1a", "us-east-1b", "us-east-1c"]
+public_cird_block  = ["172.18.1.0/24", "172.18.2.0/24", "172.18.3.0/24", "172.18.4.0/24", "172.18.5.0/24"] #list
+private_cird_block = ["172.18.10.0/24", "172.18.20.0/24", "172.18.30.0/24", "172.18.40.0/24", "172.18.50.0/24"]
+environment        = "Prod"
+ingress_value      = ["80", "8080", "443", "8443", "22", "3306", "1900", "1443"]
+
+Locals:
+
+
+
+Ex:
+  tags = {
+    Name        = "${var.vpc_name}-Public-RT"
+    Owner       = local.Owner
+    costcenter  = local.costcenter
+    TeamDL      = local.TeamDL
+    environment = "${var.environment}"
+
+  }
+
+
+
+Element:
+
+element is a function used to get an item from a list based on its index.
+
+ex:
+resource "aws_route_table_association" "public-subnets" {
+  #   count          = 3
+  count          = length(var.public_cird_block)
+  subnet_id      = element(aws_subnet.public-subnet.*.id, count.index)
+  route_table_id = aws_route_table.public-route-table.id
+} 
+
+
+Splat expression:
+
+ex:
+resource "aws_route_table_association" "public-subnets" {
+  #   count          = 3
+  count          = length(var.public_cird_block)
+  subnet_id      = element(aws_subnet.public-subnet.*.id, count.index)
+  route_table_id = aws_route_table.public-route-table.id
+} 
+
+
+Lookup:
+
+var.tf
+amis = {
+  us-east-1 = "ami-0866a3c8686eaeeba"
+  us-east-2 = "ami-0ea3c35c5c3284d82"
+}
+
+resource "aws_instance" "public-server" {
+  # count = length(var.public_cird_block)
+  count                       = var.environment == "Prod" ? 3 : 1
+  ami                         = lookup(var.amis, var.aws_region)
+}
+
+Conditions:
+
+
+provisoners:
+
+
+null resource
+
+remote exec 
+runs commands on the target resource via SSH or WinRM.
+Local exec
+- local-exec → runs commands on the machine where Terraform is executed.
+
+
+triggers = {
+    always_run = timestamp()   # forces re-run on each apply
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "echo '#!/bin/bash' > /tmp/user-data.sh",
+      "echo 'echo Updated by Terraform at $(date)' >> /tmp/user-data.sh",
+      "chmod +x /tmp/user-data.sh"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"                # adjust based on your AMI (ec2-user for Amazon Linux)
+      private_key = file(var.private_key)   # path to your private key
+      host        = aws_instance.web.public_ip
+    }
+  }

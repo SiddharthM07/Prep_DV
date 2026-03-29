@@ -1,0 +1,34 @@
+user(Client) ----k get po -->(Server)API Server(Client) ---ETCD(Server)
+
+Public key Crypthography :
+
+Two important application layer security protocol
+SSH and HTTPS 
+
+SSH-Keygen :
+Generates Key pair public and private
+Private key with client 
+Public key on server
+
+OpenSSL:
+in HTTPS S stanrds for secure the HTTP is secure because TLS is working in backgorund
+
+tool used to generate TLS is called OpenSSL
+PrivateKey certificate with pub key and CA signature
+
+Tools Hashicorp vault,certbot,cfssl
+
+K8s works on premis of two way tls called mTLS(Mutual)
+
+Be it in SSH or TLS server proves it's identitiy 1st 
+
+whenever kubeapi server wants to participate in mTLS Api server will genrate a key pair
+Cert and private key 
+then a CSR will be Created
+api --sends CSR -->K8s CA 
+
+User will have the certificate file of k8s CA which inturn helps in checking the legitimity of the CA while sending or recieving a req it will be under kubeconfig file
+
+certificate-authority Data 
+client certificate data 
+all the info about clusters users are available in config file

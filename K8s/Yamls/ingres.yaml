@@ -1,0 +1,63 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: result-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    spec.ingressClassName: nginx
+#  changed - as it is depracted "kubernetes.io/ingress.class"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - "result.soapfree.online"
+    secretName: nginx-tls-default
+  rules:
+  - host: result.soapfree.online
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: result
+            port:
+              number: 80
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vote-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    spec.ingressClassName: nginx
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - "vote.soapfree.online"
+    - "www.soapfree.online"
+    secretName: nginx-tls-default
+  rules:
+  - host: vote.soapfree.online
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: vote
+            port:
+              number: 80
+  - host: www.soapfree.online
+    http: 
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: vote
+            port:
+              number: 80

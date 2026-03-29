@@ -1,0 +1,20 @@
+Drift Detection and Notification
+---------------------------------
+terraform init 
+terraform plan -refresh-only 
+Refresh only 
+
+Driftctl:
+----------
+driftctl is a tool specifically built for:
+Detecting infrastructure drift at scale.
+
+driftctl scan --from tfstate+s3://my-terraform-backendjguughguf/global/terraform.tfstate --output json://drift_scan.json
+Scanned states (1)
+Scanning resources
+
+Once comparision with the json created we can do import
+
+Remote backend
+
+provisioner

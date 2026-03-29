@@ -1,0 +1,115 @@
+Git Checkout
+    |
+Trivy FS Scan (SCA)--Checking dependencies for Vulnerability
+    |
+Build+Test (mvn clean + sonar analysis run)        
+    |
+SonarQube analysis(QualityGate+SAST)   -- Checking code for Vulnerability
+    |
+ECR login and Docker Image Build
+    |
+Trivy Image Vulnerability Scan 
+    |
+Push to AWS ECR
+    |
+Deploy to EKS                
+
+Install PostgreSQL and create DB for SonarQube
+In SonarQube, the database is critical. It stores:
+
+All projects, analyses and measures (issues, coverage, duplications, ratings, technical debt).
+Rules, quality profiles, quality gates, user accounts, tokens and general configuration.
+Because this data is so important, in production you will often see enterprises run SonarQube’s database on a separate, self managed PostgreSQL VM or use a managed service such as Amazon RDS for PostgreSQL, so that performance, backups and high availability can be handled independently from the SonarQube application VM.
+
+For development and small test setups, you will sometimes see H2 being used. H2 is an embedded, in memory or file based relational database that is very easy to start but not designed for heavy, multi user production use. It is fine for quick local trials, but for any serious team environment SonarQube recommends PostgreSQL instead.
+
+
+pipeline {
+    agent { label 'docker-maven-trivy' }
+    tools {
+        maven 'maven3' //tool which we installed in manage Jenkins needs to be called here 
+    }
+    environment {
+        SONAR_IP = '172.31.37.48'
+        ECR_REGISTRY = '386275436648.dkr.ecr.ap-south-1.amazonaws.com'
+        IMAGE_REPO = "${ECR_REGISTRY}/cwvj-devsecops-demo"
+    }
+    stages {
+        stage('Trivy FS Scan') {
+            steps {
+                sh 'trivy fs --exit-code 1 --severity HIGH,CRITICAL .' //if there are any Vulnerability with high or critical exit the pipeline
+            }
+        }
+        stage('Build & Sonar') {  //Create Project and associate QualityGate and create a token for new user
+            steps {
+                withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+              sh 'mvn clean verify sonar:sonar \  //"clean create package and perform unit test in pom.xml we have Jacoco for code quality"
+  -Dsonar.projectKey=cwvj-devsecops-demo \
+  -Dsonar.host.url="http://${SONAR_IP}:9000" \
+  -Dsonar.token="${SONAR_TOKEN}" \
+  -Dsonar.qualitygate.wait=true'
+}
+            }
+        }
+        stage('ECR Login') { //Always use immutable in PROD
+            steps {
+                sh 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $ECR_REGISTRY'
+            }
+        }
+        stage('Build Image') {  //Needs IAM role to connect to ECR (EC@ specific)
+            steps {
+                 sh 'export DOCKER_BUILDKIT=0 && docker build --platform linux/amd64 -t "$IMAGE_REPO:$BUILD_NUMBER" -t "$IMAGE_REPO:latest" .'   
+            }
+        }
+        stage('Trivy Image Scan') { //Scans base image and its os packages for Vulnerability
+            steps {
+               sh 'trivy image --exit-code 1 --severity HIGH,CRITICAL "$IMAGE_REPO:$BUILD_NUMBER"' 
+            }
+        }
+        stage('Push to ECR') {
+  steps {
+    sh 'docker push "$IMAGE_REPO:$BUILD_NUMBER"'
+    sh 'docker push "$IMAGE_REPO:latest"'
+  }
+}
+
+stage('Update Deployment') {
+    steps {
+        sh 'sed -i "s|image:.*|image: $IMAGE_REPO:$BUILD_NUMBER|g" deploy-svc.yaml' //to update the deployment with latest tag
+    }
+}
+stage('Deploy to Kubernetes') { //need to create role for access and add the arn of that role in aws-auth cm
+    steps {
+        sh '''#!/bin/bash -l //also need authz RBAC 
+aws eks update-kubeconfig \
+  --region ap-south-1 \
+  --name cwvj-devsecops-eks \
+  --kubeconfig /home/jenkins/.kube/config
+
+kubectl create ns cwvj-devsecops
+kubectl apply -f deploy-svc.yaml
+
+kubectl rollout status -n cwvj-devsecops deployment/cwvj-devsecops-demo --timeout=60s || {
+  kubectl rollout undo -n cwvj-devsecops deployment/cwvj-devsecops-demo || true
+  exit 1
+}
+'''    
+    }
+}
+    }
+      post {
+    success { echo "Build ${env.BUILD_NUMBER} succeeded" }
+    failure { echo "Build ${env.BUILD_NUMBER} failed" }
+    always  { echo "Build ${env.BUILD_NUMBER} finished" }
+}
+}
+
+
+
+Dockerfile
+
+FROM eclipse-temurin:21
+WORKDIR /app
+COPY target/cwvj-devsecops-demo-1.0.0-SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: alph2
+  namespace: alphs
+  labels:
+    run: alph2
+    app: nginx
+spec:
+  containers:
+  - name: alpha2
+    image: nginx:latest
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: alph3
+  namespace: alphs
+  labels:
+    run: alph3
+    app: nginx
+spec:
+  containers:
+  - name: alpha3
+    image: nginx:latest

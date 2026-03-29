@@ -1,0 +1,25 @@
+Structured DB
+RDS:
+----
+MYSql
+Oracle
+Postgress
+MariaDB
+Aurora
+
+Unstructured:
+S3
+Dynamo_DB
+DocumentDB
+Cassandra
+
+IN-Memory DB:
+AWS Redis
+Elastic Cache
+
+RDS:
+Create Subne Groups>Multi availablity DB instance
+
+
+DynamoDB :
+Data will  be stored in Key value pairs

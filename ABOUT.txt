@@ -1,0 +1,53 @@
+I’m Siddharth, and I have around 6 years of overall IT experience, with about 4 years focused on cloud and infrastructure roles
+
+In my current role, I am a part of a cloud team that supports multiple internal teams such as developers, database, middleware, NOC, and security.
+We collaborate closely to provision and manage cloud infrastructure.. based on project requirements while ensuring governance and security standards .
+
+**our team follows Agile practices, with daily stand-ups and Jira-based tracking to manage sprint tasks and blockers.
+
+
+From a technical perspective, I work with Terraform for infrastructure provisioning, Jenkins for CI/CD automation, and AWS EKS for container orchestration and deployments. My role focuses on infrastructure automation and enabling development teams by supporting build and deployment workflows.
+
+
+I also participate in activities like cost optimization and compliance coordination, 
+where we review cloud usage and support audit-related requirements.
+
+Overall, my experience has been around cloud operations, automation, and cross-team collaboration, 
+and I’m currently focusing on strengthening my DevOps and cloud engineering skills further.
+=============================================================================================================================
+
+
+
+Project 
+
+We are currently on a microservices-based application running completly on AWS. 
+The services are developed mainly using Node.js and Python and are independently deployable, 
+which helped teams release changes without affecting other components.
+
+The application traffic is managed through API Gateway, which routes requests to microservices running on ECS Fargate.
+ My involvement was mainly on the infrastructure and deployment side, supporting containerized workloads and ensuring smooth deployments.
+
+For asynchronous workflows, we use services like SQS and SNS for tasks such as notifications, email processing, and background jobs. 
+
+I work with the team to support infrastructure setup and operational monitoring around these services.
+
+On the database side, different services use different storage solutions depending on requirements — 
+mainly RDS (PostgreSQL) for relational workloads and DynamoDB for high-throughput use cases.
+
+CI/CD pipelines are implemented using Jenkins
+ I am involved in maintaining and supporting these pipelines, along with infrastructure provisioning using Terraform.
+
+For monitoring and observability, we use CloudWatch metrics, logs, and dashboards to track system health and alerts.
+ We also use AWS Secrets Manager to securely manage application secrets and configuration.
+
+Overall, my role focuses on supporting cloud infrastructure, automation, 
+and deployment processes while collaborating with development teams to maintain reliable and scalable services.
+
+
+==============================================
+
+
+
+
+
+

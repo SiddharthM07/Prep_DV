@@ -1,0 +1,37 @@
+Gitflow usually has:
+
+main / master   → production
+develop         → integration branch
+feature/*       → new features
+release/*       → pre-production release
+hotfix/*        → production fixes
+
+Branch-based Jenkins pipelines
+
+feature/*
+Purpose:
+developer testing
+fast feedback
+Pipeline usually does:
+✔ Build
+✔ Unit tests
+✔ Code quality scan
+❌ No deployment
+
+Develop/*
+Build
+Test
+Docker build
+Deploy → DEV environment
+
+Release/*
+Build
+Full testing
+Security scans
+Deploy → QA / UAT
+
+Main/*
+Build
+Full testing
+Security scans
+Deploy → QA / UAT

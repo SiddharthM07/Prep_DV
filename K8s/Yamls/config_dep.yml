@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: app1
+  name: app1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      containers:
+        - image: siddharth1218/voting:v1
+          name: voting
+      imagePullSecrets:
+        - name: docker-pwd
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-access-keys
+type: Opaque
+data:
+  AWS_ACCESS_KEY_ID: 
+  AWS_SECRET_ACCESS_KEY: 
+  #kubectl rollout restart deployment app1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1
+  labels:
+    app: app1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      containers:
+        - name: awscli
+          image: kiran2361993/troubleshootingtools:v1
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-access-keys
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-access-keys
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_DEFAULT_REGION
+              value: "us-east-2"
+

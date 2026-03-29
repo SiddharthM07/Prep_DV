@@ -1,0 +1,220 @@
+POM.xml
+
+Maven Validate -->mvn compile-->mvn test-->package -->deploy
+
+Now we will get artifact 
+
+We are going to store the artifact in JFrog/Nexus or Github itself 
+
+Whatever Developer does gets stored inside the src location 
+
+POM.xml has all the dependencies to run the application project object model whenevr mvn commands is truggerd it checks in pom.xml and checks for the req dependencies 
+
+Install Java,Maven 
+
+after compliing the file will turn into .java --> .class --> .war or .jar 
+
+
+mvn validate : checks for all the dependencies form POM.xml
+
+o/p 
+[INFO] You have 0 Checkstyle violations.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  19.407 s
+[INFO] Finished at: 2026-01-22T13:59:19Z
+[INFO] ------------------------------------------------------------------------
+root@ip-10-1-1-245:~/maven-jforg# 
+
+
+mvn compile : It'll download all the dependencies and will create a target file 
+
+o/p:
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 30 source files with javac [debug parameters release 17] to target/classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  21.408 s
+[INFO] Finished at: 2026-01-22T14:02:47Z
+[INFO] ------------------------------------------------------------------------
+
+root@ip-10-1-1-245:~/maven-jforg# ls -ltr
+total 108
+drwxr-xr-x 3 root root  4096 Jan 22 13:52 gradle
+-rw-r--r-- 1 root root   488 Jan 22 13:52 docker-compose.yml
+-rw-r--r-- 1 root root  3276 Jan 22 13:52 build.gradle
+-rw-r--r-- 1 root root 10405 Jan 22 13:52 README.md
+-rw-r--r-- 1 root root 11360 Jan 22 13:52 LICENSE.txt
+-rw-r--r-- 1 root root    38 Jan 22 13:52 settings.gradle
+-rw-r--r-- 1 root root 14939 Jan 22 13:52 pom.xml
+-rw-r--r-- 1 root root  8482 Jan 22 13:52 mvnw.cmd
+-rwxr-xr-x 1 root root 11791 Jan 22 13:52 mvnw
+drwxr-xr-x 2 root root  4096 Jan 22 13:52 k8s
+-rw-r--r-- 1 root root  2896 Jan 22 13:52 gradlew.bat
+-rwxr-xr-x 1 root root  8618 Jan 22 13:52 gradlew
+drwxr-xr-x 5 root root  4096 Jan 22 13:52 src
+drwxr-xr-x 5 root root  4096 Jan 22 14:02 target --here
+root@ip-10-1-1-245:~/maven-jforg# 
+
+Now we need to create a package out of al these using mvn package
+
+[INFO] The original artifact has been renamed to /root/maven-jforg/target/spring-petclinic-4.0.0-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  36.537 s
+[INFO] Finished at: 2026-01-22T14:10:58Z
+[INFO] ------------------------------------------------------------------------
+root@ip-10-1-1-245:~/maven-jforg# 
+root@ip-10-1-1-245:~/maven-jforg# 
+root@ip-10-1-1-245:~/maven-jforg# 
+
+
+
+Before mvn package 
+root@ip-10-1-1-245:~/maven-jforg# cd target/
+root@ip-10-1-1-245:~/maven-jforg/target# ls -ltr
+total 44
+-rw-r--r-- 1 root root   412 Jan 22 14:02 checkstyle-checker.xml
+-rw-r--r-- 1 root root 11360 Jan 22 14:02 checkstyle-header.txt
+-rw-r--r-- 1 root root    83 Jan 22 14:02 checkstyle-result.xml
+-rw-r--r-- 1 root root 10948 Jan 22 14:02 checkstyle-cachefile
+drwxr-xr-x 3 root root  4096 Jan 22 14:02 maven-status
+
+After mvn package 
+total 68796
+-rw-r--r-- 1 root root 69156029 Nov 28  2024 spring-petclinic-4.0.0-SNAPSHOT.jar---.jar created 
+drwxr-xr-x 3 root root     4096 Jan 22 14:02 maven-status
+drwxr-xr-x 3 root root     4096 Jan 22 14:02 generated-sources
+drwxr-xr-x 8 root root     4096 Jan 22 14:02 classes
+-rw-r--r-- 1 root root    11360 Jan 22 14:10 checkstyle-header.txt
+-rw-r--r-- 1 root root      412 Jan 22 14:10 checkstyle-checker.xml
+-rw-r--r-- 1 root root       83 Jan 22 14:10 checkstyle-result.xml
+-rw-r--r-- 1 root root    10948 Jan 22 14:10 checkstyle-cachefile
+drwxr-xr-x 3 root root     4096 Jan 22 14:10 generated-test-sources
+drwxr-xr-x 3 root root     4096 Jan 22 14:10 test-classes
+drwxr-xr-x 2 root root     4096 Jan 22 14:10 surefire-reports
+drwxr-xr-x 2 root root     4096 Jan 22 14:10 test-ids
+-rw-r--r-- 1 root root   753933 Jan 22 14:10 jacoco.exec
+
+mvn clean : incase of any  change made this command cleans all the dependencies from target 
+
+[INFO] 
+[INFO] --- maven-clean-plugin:3.5.0:clean (default-clean) @ spring-petclinic ---
+[INFO] Deleting /root/maven-jforg/target
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.327 s
+[INFO] Finished at: 2026-01-22T16:13:40Z
+[INFO] ------------------------------------------------------------------------
+root@ip-10-1-1-245:~/maven-jforg# 
+
+
+mvn clean package: 
+What it does
+
+This runs two things in sequence:
+
+clean → deletes target/
+
+package → builds the application
+
+o/p
+[INFO] --- jacoco-maven-plugin:0.8.14:report (report) @ spring-petclinic ---
+[INFO] Loading execution data file /root/maven-jforg/target/jacoco.exec
+[INFO] Analyzed bundle 'petclinic' with 22 classes
+[INFO] 
+[INFO] --- maven-jar-plugin:3.4.2:jar (default-jar) @ spring-petclinic ---
+[INFO] Building jar: /root/maven-jforg/target/spring-petclinic-4.0.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot-maven-plugin:4.0.1:repackage (repackage) @ spring-petclinic ---
+[INFO] Replacing main artifact /root/maven-jforg/target/spring-petclinic-4.0.0-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /root/maven-jforg/target/spring-petclinic-4.0.0-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  36.186 s
+[INFO] Finished at: 2026-01-22T16:14:39Z
+[INFO] ------------------------------------------------------------------------
+
+
+Flow 
+clean
+validate
+compile
+test
+package
+
+
+
+artifact will be stored in below location so if some similar project wants to use this artifact they have to access this instance which is not a good practice
+root@ip-10-1-1-245:~/.m2/repository# ls -ltr
+total 68
+drwxr-xr-x  3 root root 4096 Jan 22 13:57 commons-codec
+drwxr-xr-x  3 root root 4096 Jan 22 13:57 commons-io
+drwxr-xr-x  3 root root 4096 Jan 22 13:57 tools
+drwxr-xr-x 11 root root 4096 Jan 22 13:59 io
+drwxr-xr-x  3 root root 4096 Jan 22 13:59 ch
+drwxr-xr-x  3 root root 4096 Jan 22 13:59 commons-logging
+drwxr-xr-x  3 root root 4096 Jan 22 13:59 info
+drwxr-xr-x  3 root root 4096 Jan 22 13:59 commons-beanutils
+drwxr-xr-x  3 root root 4096 Jan 22 13:59 commons-collections
+drwxr-xr-x  6 root root 4096 Jan 22 13:59 net
+drwxr-xr-x  3 root root 4096 Jan 22 13:59 antlr
+drwxr-xr-x  6 root root 4096 Jan 22 13:59 javax
+drwxr-xr-x  3 root root 4096 Jan 22 14:02 joda-time
+drwxr-xr-x  3 root root 4096 Jan 22 14:02 nu
+drwxr-xr-x 11 root root 4096 Jan 22 14:02 jakarta
+drwxr-xr-x 56 root root 4096 Jan 22 14:02 org
+drwxr-xr-x 18 root root 4096 Jan 22 14:02 com
+root@ip-10-1-1-245:~/.m2/repository# pwd
+/root/.m2/repository
+root@ip-10-1-1-245:~/.m2/repository# 
+root@ip-10-1-1-245:~/.m2/repository# 
+
+
+So we have to store the artifact in a public repo we will use jforg for that where we can do versioning
+
+
+version changing 
+
+so Wehenever we run the mvn package if we want to change the version after evry run in pom.xml 
+we need to add this in our pom.xml as a plygin and run the command as below 
+<plugin>
+  <groupId>org.codehaus.mojo</groupId>
+  <artifactId>build-helper-maven-plugin</artifactId>
+  <version>3.2.0</version>
+</plugin>
+
+<plugin>
+  <groupId>org.codehaus.mojo</groupId>
+  <artifactId>versions-maven-plugin</artifactId>
+  <version>2.8.1</version>
+</plugin>
+
+mvn versions:set -DnewVersion=1.0.0
+
+root@ip-10-1-1-245:~/maven-jforg# mvn versions:set -DnewVersion=1.0.2
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------< org.springframework.samples:spring-petclinic >------------
+[INFO] Building petclinic 1.0.1
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- versions-maven-plugin:2.8.1:set (default-cli) @ spring-petclinic ---
+[INFO] Local aggregation root: /root/maven-jforg
+[INFO] Processing change of org.springframework.samples:spring-petclinic:1.0.1 -> 1.0.2
+[INFO] Processing org.springframework.samples:spring-petclinic
+[INFO]     Updating project org.springframework.samples:spring-petclinic
+[INFO]         from version 1.0.1 to 1.0.2
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.995 s
+[INFO] Finished at: 2026-01-22T17:11:06Z
+[INFO] ------------------------------------------------------------------------
+root@ip-10-1-1-245:~/maven-jforg# 

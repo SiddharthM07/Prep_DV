@@ -1,0 +1,53 @@
+Monitoring 
+Realtime -Metrics 
+Alarms
+Log Insights 
+Custom Metrics
+Cost optimization
+
+Metrics 
+AWS Default Metrics
+Automatically available.
+Examples:
+EC2 CPU
+ELB latency
+Lambda invocations
+
+Custom Metrics
+aws cloudwatch put-metric-data
+Number of active users
+Queue length
+App response time
+
+
+Logs
+
+Stores:
+app logs
+container logs
+lambda logs
+system logs
+
+Structure:
+
+Log Group
+   → Log Stream
+      → Log events
+
+
+What is Log Group vs Log Stream?
+Group = container
+Stream = individual source
+
+
+How to monitor ECS/EKS logs?
+
+Using:
+awslogs driver
+FluentBit / CloudWatch agent
+
+
+
+Cloud Trail:
+=============
+CloudWatch is used for monitoring AWS resources, collecting metrics, logs, and triggering alerts, while CloudTrail records AWS API activity for auditing and security tracking, showing who performed what action in the account.

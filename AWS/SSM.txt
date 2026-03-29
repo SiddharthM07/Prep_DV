@@ -1,0 +1,59 @@
+SSM --A service to manage and operate servers at scale.
+SSM agent  needs to be installed in instances 
+
+
+To connect to a private EC2 we need VPC endpoints too. VPC Endpoints provide Private network path to AWS services So EC2 can reach SSM privately.
+Below are the requierd endpoints:    
+com.amazonaws.<region>.ssm
+com.amazonaws.<region>.ec2messages
+com.amazonaws.<region>.ssmmessages
+
+You (AWS Console)
+        ↓
+SSM Service
+        ↓
+VPC Endpoint (ENI)
+        ↓
+Private EC2
+
+Run command:
+can execute commands in EC2 instances without logging in 
+We can install a application or execute a shell using tag based seperation or grouping.
+
+
+Parameter Store :
+A secure place to store:
+configuration values
+secrets
+environment variables
+SecureString ⭐ (Important)
+Encrypted using KMS.
+
+
+
+State Manager:
+Automates configuration management of instances.Ensures EC2 instances stay in a desired state.
+Automatically:
+install CloudWatch agent
+enforce security configs
+run scripts regularly
+ensure services are running
+
+
+Patch Manager :
+Automates OS patching.
+Instead of manually patching servers.
+scans instances
+applies patches
+schedules maintenance windows
+Patch Manager automates operating system patching across EC2 instances using defined patch baselines and schedules.
+
+Rescue Tool :
+If password is lost those instances can be recovered through this
+
+
+SSM session connection are stored in cloudwatch     
+
+How does EC2 download patches without NAT?
+
+We can use AWS Systems Manager Patch Manager along with required VPC endpoints like SSM and S3 so the instance can download and apply patches privately without internet access. Another approach is using internal repositories or immutable AMI updates.

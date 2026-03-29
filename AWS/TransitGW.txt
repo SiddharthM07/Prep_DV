@@ -1,0 +1,47 @@
+TG 
+AWS Transit Gateway is a central hub that connects multiple VPCs and on-premises networks, simplifying network architecture by replacing complex VPC peering.
+TGW -->"central hub"
+Full mesh complexity with VPC peering (More connections)
+
+VPG: Virtual Private Gatway
+
+
+
+Use Case 1 — Multi-VPC Architecture (MOST COMMON)
+
+Company has:
+Dev VPC
+QA VPC
+Prod VPC
+Shared Services VPC
+Instead of many peerings:
+Use TGW.
+
+ Use Case 2 — Shared Services Model
+Example:
+
+Central logging
+Monitoring
+AD server
+All VPCs connect via TGW.
+
+ Use Case 3 — Hybrid Cloud
+
+Connect:
+On-premise → AWS VPCs
+via:
+AWS VPN
+Direct Connect
+through TGW.
+
+ Use Case 4 — Multi-Account Architecture
+
+Common enterprise pattern:
+Each account = separate VPC
+TGW connects all.
+
+Create TG 
+
+TG - Attach using TG attachment and update the routes in Route Tables of both attachment
+
+Peering Request we will get a request on dashboard once approved connection will be established

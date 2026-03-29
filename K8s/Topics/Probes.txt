@@ -1,0 +1,303 @@
+
+
+Health Probes:
+We need our applications online 100% as mush as possible health probes will not make sure to keep our applications up but they play an esential part in ensuring that our pods are 100 % available 
+
+Assume we need to drain our Node at some point of time either during upgrade or due to some configurational changes 
+and we have our new pod deployed in another node and we are making sure to switch the traffic to new pod only when it's running cleanly 
+But what if the new pod reports itself as ready before it's actually ready ?
+In this case we will switch the traffic to the new pod but it's not actually ready and we will start facing issues 
+We can use readiness probe be here and use some certain conditions to ensure the pod is completly ready.
+
+
+
+LivenessProbes:
+-----------------
+
+
+
+
+readinessProbe:
+----------------
+If the readiness probe fails, Kubernetes removes the container's IP address from the service's list of endpoints, directing traffic to other healthy containers.
+
+
+startup probe
+--------------------
+A startup probe is used to determine if a container's application has started successfully. It is mainly useful for scenarios where an application takes a longer time to start but can eventually become healthy. Unlike liveness and readiness probes, the result of a startup probe does not affect the container's readiness or liveness status. Once the startup probe succeeds, the liveness and readiness probes take over.
+
+
+
+Probes Types:
+------------
+HTTP Probe
+
+TCP Probe
+
+Exec Probe
+
+gRPC Probe
+
+Timing and Parameters: You can configure various parameters for liveness probes, including:
+initialDelaySeconds --> how long the probe will wait before running it's first check 
+if set to 5 sec nothing will happen for 5 sec 
+periodSeconds: how often it checks if we set to 3 sec it will check in every 3 sec intervals after our initialDelaySeconds
+
+if periodSeconds is heigher than initialDelaySeconds then initialDelaySeconds is ignored 
+
+ex : if we set periodSeconds 10 sec and initialDelaySeconds 5 here 10 > 5 so it will wait for 10 sec and check with 10 sec intervals
+
+timeoutSeconds: if we are checiking a endpoint and it usually takes 1 sec for that to respond we need to set this value as 2 
+
+sucessThreshold: it defaults to 1 this actually says how many times the test should be sucessful before marking it as sucess we can set it to more if our application is critical and we need to completly makesure everything is fine 
+
+failureThreshold: as the name suggest it says how many times it shoud fail before we get rid of the pod and spin the new one 
+
+terminantionGracePeriodSeconds: autofill this one 
+
+
+Actions on Probe Failure: When a liveness probe fails, Kubernetes takes the specified action based on the pod's restart policy:
+
+If the pod has a RestartPolicy set to Always, Kubernetes restarts the container.
+If the pod has a RestartPolicy set to OnFailure or Never, Kubernetes does not restart the container, but the failed probe affects the pod's overall health status.
+
+
+In this example, we have a pod with a single container named my-container. The container is using the my-image:latest image and exposes port 8080.
+The container has a liveness probe defined. The liveness probe is configured as an HTTP probe that checks the /health endpoint on port 8080 of the container. If the endpoint returns a successful HTTP status code (2xx or 3xx), the probe considers the container as healthy. Otherwise, it assumes the container is unhealthy.
+
+The liveness probe starts running after an initial delay of 15 seconds and is repeated every 10 seconds. The probe allows for a maximum of 3 consecutive failures before considering the container as unhealthy. Each probe has a timeout of 5 seconds, which means that if the probe does not receive a response within 5 seconds, it is considered failed.
+When the liveness probe fails, Kubernetes takes the specified action based on the pod's restart policy. For example, if the pod has a RestartPolicy set to Always, Kubernetes will restart the container.
+
+Please note that you would need to adjust the path, port, timing, and other parameters according to your specific application's requirements and setup.
+
+
+
+root@ip-172-31-23-206:~/probes# echo '                       
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-demo
+spec:
+  containers:
+  - name: app
+    image: k8s.gcr.io/echoserver:1.10
+    ports:
+    - containerPort: 8080
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 10
+      periodSeconds: 5 '| kubectl apply -f -
+pod/probe-demo created
+root@ip-172-31-23-206:~/probes# 
+
+
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-h5cfw:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  4s    default-scheduler  Successfully assigned default/probe-demo to ip-172-31-33-154.ec2.internal
+  Normal  Pulled     4s    kubelet            spec.containers{app}: Container image "k8s.gcr.io/echoserver:1.10" already present on machine
+  Normal  Created    4s    kubelet            spec.containers{app}: Created container: app
+  Normal  Started    4s    kubelet            spec.containers{app}: Started container app
+
+   Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-h5cfw:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+
+
+
+as   initialDelaySeconds is set to 10 pod waited 10 sec before it's completly ready
+
+Probes (, , etc.) are immutable once the Pod is created. That’s why you see the error:
+“pod updates may not change fields other than …”
+
+
+LivenessProbes
+root@ip-172-31-23-206:~/probes# echo '                       
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-demo
+spec:
+  containers:
+  - name: app
+    image: k8s.gcr.io/echoserver:1.10
+    ports:
+    - containerPort: 8080
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 5
+    livenessProbe:
+      httpGet:
+        path: /wrong
+        port: 9123
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      failureThreshold: 3 ' | kubectl apply -f - 
+pod/probe-demo created
+
+The pod will restart as we give a wrong port under livenessProbe
+
+
+root@ip-172-31-23-206:~# kubectl get pod probe-demo -w
+NAME         READY   STATUS    RESTARTS   AGE
+probe-demo   1/1     Running   0          12s
+probe-demo   0/1     Running   1 (1s ago)   56s
+probe-demo   1/1     Running   1 (10s ago)   65s
+
+
+
+startupprobe
+root@ip-172-31-23-206:~/probes# echo '
+> apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-demo
+spec:
+  containers:
+  - name: app
+    image: k8s.gcr.io/echoserver:1.10
+    ports:
+    - containerPort: 8080
+
+    startupProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      failureThreshold: 30
+      periodSeconds: 5
+
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      periodSeconds: 5
+
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      periodSeconds: 5 ' | kubectl apply -f -
+pod/probe-demo created
+
+root@ip-172-31-23-206:~/probes# echo '
+> apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-demo
+spec:
+  containers:
+  - name: app
+    image: k8s.gcr.io/echoserver:1.10
+    ports:
+    - containerPort: 8080
+
+    startupProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      failureThreshold: 30
+      periodSeconds: 5
+
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      periodSeconds: 5
+
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      periodSeconds: 5 ' | kubectl apply -f -
+pod/probe-demo created
+
+--
+root@ip-172-31-23-206:~# kubectl get pod probe-demo -w
+NAME         READY   STATUS    RESTARTS   AGE
+probe-demo   1/1     Running   0          7s
+
+
+Pods are running healthy now lets change the port in startup 
+
+
+root@ip-172-31-23-206:~/probes# echo '
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-demo
+spec:
+  containers:
+  - name: app
+    image: k8s.gcr.io/echoserver:1.10
+    ports:
+    - containerPort: 8080
+
+    startupProbe:
+      httpGet:
+        path: /healthz
+        port: 8121 
+      failureThreshold: 30
+      periodSeconds: 5
+
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      periodSeconds: 5
+
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+      periodSeconds: 5 ' | kubectl apply -f -
+pod/probe-demo created
+
+
+root@ip-172-31-23-206:~# kubectl get pod probe-demo -w
+NAME         READY   STATUS    RESTARTS   AGE
+probe-demo   0/1     Running   0          9s
+probe-demo   0/1     Running   1 (1s ago)   3m1s
+
+
+Startup → “Can I start?”
+Readiness → “Can I take traffic?”
+Liveness → “Am I still alive?”
+
+
+
+
+

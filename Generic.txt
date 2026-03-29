@@ -1,0 +1,62 @@
+-->How do you connect a S3 and EC2 which are in Different account ?
+- In the S3 bucket’s account (Account A)
+- Create or update the bucket policy to allow access to a role in Account B (the EC2 account).
+
+- In the EC2 instance’s account (Account B)
+- Create an IAM role with permissions to assume access to the S3 bucket in Account A.
+- Attach this role to the EC2 instance.
+The trust relationship must allow the EC2 role to be assumed by the bucket‑owner account.
+
+- Trust relationship setup
+- Account A trusts the role from Account B (via bucket policy).
+- Account B’s EC2 instance assumes that role to access the bucket.
+
+Choose another AWS role while creating a role
+
+-->Subnetting 
+IP
+---
+IPs = 2^(32 - CIDR)
+AWS reserves 5 IPs per subnet.
+
+For /24:
+Just increase 3rd number.
+
+For /16:
+Increase 2nd number
+
+--> How do we scale our instance during high connections like BlackFridays?
+During high-traffic events like Black Friday, EC2 instances scale automatically using Auto Scaling Groups. ALB and CDN services are managed and auto-scale by AWS, so we mainly monitor them. We also prepare the database using read replicas or vertical scaling and scale caching layers like Redis to reduce database load. The focus is on scaling bottlenecks rather than every component.”
+
+ALB is managed and auto-scales automatically by AWS.
+You do NOT increase instances or size.
+EC2 Instances (YES — Must Scale)
+Database (VERY IMPORTANT — Often Bottleneck) 
+Do we scale DB?
+✔ YES — but differently.
+Options:
+⭐ Vertical Scaling (Quick Fix)
+Increase instance size:
+db.t3.medium → db.r6.large
+Good for short events.
+⭐ Read Replicas (BEST for Black Friday)
+Traffic mostly reads.
+Primary DB
+   ↓
+Read Replicas
+Offloads read queries.
+
+⭐ Connection Pooling
+
+Avoid too many DB connections.
+Cache Layer (Redis / ElastiCache)
+YES — usually must scale.
+Because:
+More users → more cache requests
+Scaling cache reduces DB pressure.
+
+CDN auto-scales globally.
+
+BUT:
+
+✔ Ensure caching rules are correct.

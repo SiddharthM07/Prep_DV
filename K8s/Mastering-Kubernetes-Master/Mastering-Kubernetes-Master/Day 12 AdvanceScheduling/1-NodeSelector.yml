@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp01
+  labels:
+    app: myapp01
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp01
+  template:
+    metadata:
+      labels:
+        app: myapp01
+    spec:
+      containers:
+        - name: kubegame
+          image: kiran2361993/kubegame:v1
+      nodeSelector:
+        kubernetes.io/hostname: i-0800783fb009449ab
+
+#kubectl get pods -o wide --no-headers |  awk -F"  " '{print $1 $8}'
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: myapp02
+  name: myapp02
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: myapp02
+  template:
+    metadata:
+      labels:
+        app: myapp02
+    spec:
+      containers:
+        - image: kiran2361993/kubegame:v2
+          name: kubegame
+      nodeSelector:
+        high-perf-cpu: "yes"
+
+
+
+
+#worker nodes
+#i-0800783fb009449ab
+#i-07f3faf34afb7e7c0
+
+
+k label node i-0800783fb009449ab high-pref-cpu=yes
+k label node i-07f3faf34afb7e7c0 low-pref-cpu=yes

@@ -1,0 +1,30 @@
+Terraform Dependency Graph is the internal map Terraform builds to understand which resources depend on others and in what order they should be created or destroyed.
+Terraform builds a relationship diagram before running.
+resource "aws_vpc" "main" {}
+
+resource "aws_subnet" "subnet1" {
+  vpc_id = aws_vpc.main.id
+}
+Terraform sees Subnet → depends on → VPC
+and does 
+Create VPC first
+        ↓
+Create Subnet
+
+There are two ways terraform build dependencies:
+Created automatically when you reference another resource.
+
+Example
+vpc_id = aws_vpc.main.id
+
+Explicit :
+Used when Terraform cannot detect dependency.
+depends_on = [aws_internet_gateway.igw]
+You manually tell Terraform to create a resource first 
+
+
+During Destroy (Important!)
+
+Graph works in reverse.
+
+We can use Terraform Graph to see this 

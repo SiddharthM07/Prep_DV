@@ -1,0 +1,135 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: null
+  name: soapfree.online
+spec:
+  api:
+    dns: {}
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://soapfree.online/soapfree.online
+  dnsZone: soapfree.online
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: control-plane-us-east-2a
+      name: a
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: control-plane-us-east-2a
+      name: a
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubeProxy:
+    enabled: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: 1.33.7
+  masterPublicName: api.soapfree.online
+  networkCIDR: 172.20.0.0/16
+  networking:
+    cilium:
+      enableNodePort: true
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - cidr: 172.20.0.0/17
+    name: us-east-2a
+    type: Public
+    zone: us-east-2a
+  - cidr: 172.20.128.0/17
+    name: us-east-2b
+    type: Public
+    zone: us-east-2b
+  topology:
+    dns:
+      type: Public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: soapfree.online
+  name: control-plane-us-east-2a
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251212
+  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  rootVolumeSize: 10
+  subnets:
+  - us-east-2a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: soapfree.online
+  name: nodes-us-east-2a
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251212
+  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  role: Node
+  rootVolumeSize: 10
+  subnets:
+  - us-east-2a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: soapfree.online
+  name: nodes-us-east-2b
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251212
+  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  role: Node
+  rootVolumeSize: 10
+  subnets:
+  - us-east-2b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: SSHCredential
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: soapfree.online
+  name: admin
+spec:
+  publicKey: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJAMqUEEKko4BDwFTOu5WJxI9vsiA5AfYI6AWvWZ7kYj
+    root@ip-10-1-1-126

@@ -1,0 +1,66 @@
+when there are multiple environments like DEV Prod and test 
+and when a pipline is triggered it should run on respective environments
+
+We need to have multiple tools to be install to fullfill our CI/CD needs for that we need huge amount of memory t2.micro or medium won't work for high workloads
+
+
+
+RBAC 
+
+if not using RBAC in jenkins we can use AWS SSO or Azure AD
+
+to acheive in jenkins we need a plugin called "Role-based Authorization Strategy"
+Once installed to activate it we need to tweak some settings 
+under manage Jenkins>Security>Authorization
+We will have a option "Role Based Stratergy"
+
+Once That is done we will be enabled with a option "Manage and Assign Roles" under Security in Manage Jenkins Page 
+
+Security>Manage and Assign Roles>
+We can add Roles like admin with full access and developer with only read access and devops engineer with full access
+
+And we need to define on which items they can have this access for that we need to add "item roles"
+
+So we're done with roles and item roles now we need add Users
+
+Once we're done with creating users we need to assign these roles to the users
+under manage Jenkins>Manage and Assign Roles>Assign Roles
+And also assign Item roles java and python which we created to respetcive users
+
+Backup-restore 
+
+var/lib/jenkins
+
+Plugin 
+ThinBackup
+
+root@ip-10-1-1-75:~# 
+root@ip-10-1-1-75:~# chown -R jenkins:jenkins /jenkins-backup/
+root@ip-10-1-1-75:~# 
+root@ip-10-1-1-75:~# 
+root@ip-10-1-1-75:~# 
+root@ip-10-1-1-75:~# 
+
+under system > you'll find something called ThinBackup Configuration > give the location and cron for scheduling the backup 
+
+You'll see something like this
+
+root@ip-10-1-1-75:~# cd /jenkins-backup/
+root@ip-10-1-1-75:/jenkins-backup# ls -ltr
+total 4
+drwxr-xr-x 5 jenkins jenkins 4096 Feb  5 12:44 FULL-2026-02-05_12-44
+root@ip-10-1-1-75:/jenkins-backup# 
+
+====================================
+cname name 
+
+cname value 
+
+simple record 
+
+simple routing 
+define simple record 
+cname value     
+
+Global in jenkins --->Master and slave will access those creds
+system --> only that particular node 

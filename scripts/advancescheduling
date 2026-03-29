@@ -1,0 +1,277 @@
+#NODE SELECTOR
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: myapp01
+  name: myapp01
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp01
+  template:
+    metadata:
+      labels:
+        app: myapp01
+    spec:
+      containers:
+      - image: kiran2361993/kubegame:v2
+        name: kubegame
+      nodeSelector:
+        kubernetes.io/hostname: i-00a968443bbbdd1cf
+
+#kubectl get pods -o wide --no-headers |  awk -F"  " '{print $1 $8}'
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: myapp02
+  name: myapp02
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: myapp02
+  template:
+    metadata:
+      labels:
+        app: myapp02
+    spec:
+      containers:
+      - image: kiran2361993/kubegame:v2
+        name: kubegame
+      nodeSelector:
+        high-perf-cpu: "yes"
+
+---
+
+#NODE AFFINITY REQ
+
+kubectl label node i-007d6a517ab67f906 env=one
+kubectl label node i-080151329a9fb1c6d env=two
+kubectl label node i-08fd11925e913b080 env=three
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: required-hard
+  name: required-hard
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      run: required-hard
+  template:
+    metadata:
+      labels:
+        run: required-hard
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: env
+                operator: In
+                values:
+                - one
+                - two
+      containers:
+      - image: nginx:latest
+        name: required-hard
+---
+
+#NODE AFFINITY PREFFERED
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: preferred-soft
+  name: preferred-soft
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      run: preferred-soft
+  template:
+    metadata:
+      labels:
+        run: preferred-soft
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 40
+            preference:
+              matchExpressions:
+              - key: env
+                operator: In
+                values:
+                - one
+          - weight: 30
+            preference:
+              matchExpressions:
+              - key: env
+                operator: In
+                values:
+                - two
+          - weight: 30
+            preference:
+              matchExpressions:
+              - key: env
+                operator: In
+                values:
+                - three
+      containers:
+      - image: nginx
+        name: deploy01
+
+---
+
+#TAINTS 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: app1
+  name: app1
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: app1
+template:
+  metadata:
+    labels:
+      app: app1
+  spec:
+    containers:
+      - image: nginx:latest
+        name: nginx
+    tolerations:
+      - key: "high-cpu"
+        operator: "Equal"
+        value: "yes"
+        effect: "NoExecute"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: app2
+  name: app2
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: app2
+template:
+  metadata:
+    labels:
+      app: app2
+  spec:
+    containers:
+      - image: nginx:latest
+        name: nginx
+    tolerations:
+      - key: "med-cpu"
+        operator: "Equal"
+        value: "yes"
+        effect: "NoExecute"
+      - key: "low-cpu"
+        operator: "Equal"
+        value: "yes"
+        effect: "NoExecute"
+
+
+---
+
+#EXAMPLE 
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: redis
+  name: redis
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - redis
+            topologyKey: "topology.kubernetes.io/zone"
+      containers:
+      - image: redis:latest
+        name: redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web
+  name: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+        perf: high
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - web
+            topologyKey: "topology.kubernetes.io/zone"
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - redis
+            topologyKey: "topology.kubernetes.io/zone"
+      containers:
+      - image: nginx:latest
+        name: nginx
+
+
+# ku taint node nodeid high-cpu=yes:NoExecute
+# ku taint node nodeid med-cpu=yes:NoExecute 
+# ku taint node nodeid low-cpu=yes:NoExecute 
+
+
+

@@ -1,0 +1,113 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: new-cluster-admin-role
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+
+
+---
+#clusterRoleBinding
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ClusterRole-saikiran
+subjects:
+- kind: User
+  name: saikiran
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: new-cluster-admin-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+
+#ROLE.YAML
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: user1-role
+  namespace: development
+rules:
+  - apiGroups: ["", "apps", "networking.k8s.io"] # "" indicates the core API group for eacho use '' not "".
+
+    resources:
+      ["pods", "deployments", "replicasets", "nodes", "ingress", "services"]
+    verbs: ["get", "update", "list", "create", "delete"]
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: user2-role
+  namespace: production
+rules:
+  - apiGroups: ["", "apps", "networking.k8s.io"] # "" indicates the core API group for eacho use '' not "".
+
+    resources:
+      ["pods", "deployments", "replicasets", "nodes", "ingress", "services"]
+    verbs: ["get", "update", "list", "create", "delete"]
+
+---
+
+#RoleBinding.yaml
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: user1-RoleBinding
+  namespace: development
+subjects:
+- kind: User
+  name: user1
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: user1-role
+  apiGroup: rbac.authorization.k8s.io 
+
+---
+
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: user2-RoleBinding
+  namespace: production
+subjects:
+- kind: User
+  name: user2
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: user2-role
+  apiGroup: rbac.authorization.k8s.io 
+
+---
+
+#KUBECONFIG.yaml
+
+apiVersion: v1
+clusters:
+  - cluster:
+      certificate-authority-data: XXXXXXXXXXX
+      server: https://api.cloudvishwakarma.in
+      tls-server-name: api.internal.cloudvishwakarma.in
+    name: cloudvishwakarma.in
+contexts:
+  - context:
+      cluster: cloudvishwakarma.in
+      namespace: development
+      user: user1
+    name: user1-context
+current-context: user1-context
+kind: Config
+users:
+  - name: user1
+    user:
+      client-certificate: /root/user1.crt
+      client-key: /root/user1.key

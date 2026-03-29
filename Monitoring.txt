@@ -1,0 +1,89 @@
+
+We use Prometheus and Grafana for monitoring metrics based on RED and USE methodologies. Exporters collect infrastructure and application metrics, which Prometheus scrapes and Grafana visualizes. For logging, we use the ELK stack where logs are collected, indexed in Elasticsearch, and analyzed through Kibana.
+
+
+=>RED Metrics (VERY IMPORTANT — Interview Favorite)
+
+Used for APIs / microservices.
+
+R → Rate
+How many requests?
+Requests per second
+
+
+E → Errors
+How many failed?
+5xx errors
+
+D → Duration
+How long requests take?
+
+Response latency
+
+RED = API health
+OTT Example
+Rate → video play requests
+Errors → playback failures
+Duration → buffering delay
+
+
+=>USE Metrics (Infrastructure Focus)
+Used for servers & resources.
+
+U → Utilization
+How busy resource is.
+Example
+CPU 80%
+
+
+S → Saturation
+Is it overloaded?
+Example:
+CPU queue length high
+
+E → Errors
+Failures.
+Example:
+Disk read errors
+
+
+USE = Infrastructure health
+
+Exporters
+==========
+Exporters collect metrics from systems.
+Think:
+Translator that converts system data → Prometheus format.
+
+Exporter	           Monitors
+Node Exporter	      Linux server metrics
+kube-state-metrics	Kubernetes objects
+cAdvisor	            Container metrics
+Blackbox exporter	      Endpoint health
+
+
+E → Elasticsearch
+Stores logs.
+Searchable database.
+
+L → Logstash
+Processes logs:
+parsing
+filtering
+(Modern setups often use Fluent Bit instead.)
+
+K → Kibana
+UI to search logs.
+Example:
+ERROR payment failed
+
+
+App writes logs
+      ↓
+Log collector sends logs
+      ↓
+Elasticsearch stores
+      ↓
+Kibana visualizes
+
+

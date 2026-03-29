@@ -1,0 +1,16 @@
+Amazon CloudFront is a global Content Delivery Network (CDN) that delivers content to users with low latency by caching data at edge locations closer to users.
+
+Instead of users hitting your server directly:
+
+User → CloudFront → Origin server
+
+Step 1 — User Request
+User requests image/video/app
+Step 2 — Edge Location Check
+If cached:
+Serve immediately (FAST)
+If not cached:
+Edge → Origin → Fetch content
+Then cache it.
+Step 3 — Future Requests
+Served from edge.

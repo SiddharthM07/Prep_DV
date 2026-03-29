@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1
+  labels:
+    app: app1
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+      tolerations:
+      - key: "high-cpu"
+        operator: "Equal"
+        value: "yes"
+        effect: "NoExecute"
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: app2
+  name: app2
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: app2
+template:
+  metadata:
+    labels:
+      app: app2
+  spec:
+    containers:
+      - image: nginx:latest
+        name: nginx
+    tolerations:
+      - key: "low-cpu"
+        operator: "Equal"
+        value: "yes"
+        effect: "NoExecute"
+
+
+
+
+
+# k taint node i-0800783fb009449ab  high-cpu=yes:NoSchedule-
+# k taint node i-07f3faf34afb7e7c0  low-cpu=yes:NoSchedule-
+#
+
+# k describe nodes i-08cb4fad5c2fd467e | grep -i high
+# k describe nodes i-0dcf19a32f70443af | grep -i low
+#
+
+# k taint node i-0800783fb009449ab high-cpu=yes:NoExecute
+# k taint node i-07f3faf34afb7e7c0 low-cpu=yes:NoExecute

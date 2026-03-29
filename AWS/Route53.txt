@@ -1,0 +1,32 @@
+
+Amazon Route 53 is AWS’s highly available and scalable DNS (Domain Name System) service used for domain registration, DNS routing, and health-based traffic management.
+
+Failover Policy:
+Route53 knows thourgh health checks whether the instance is up or down if the instance is down it will switch to another 
+Instance(DR)
+Cerate Health Checks>Define Failover record primary and secondary 
+
+
+Latency:
+Fastest response time
+
+
+Weighted Policy:
+Two versions we wanted to test a new feature on v2 as v1 is primary version. we can route small amount of traffic to v2 using this for canary deployments.
+We can also balance load using weighted policy.
+Blue Green
+
+GeoLocation:
+sends traffic based on GeoLocation to different endpoints.
+India user always → India server
+Default / fallback location
+
+If location not matched → default endpoint used.
+
+User (India)
+      ↓
+DNS query
+      ↓
+Route53 checks IP location
+      ↓
+Returns India ALB DNS

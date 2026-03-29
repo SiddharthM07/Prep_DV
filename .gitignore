@@ -1,0 +1,22 @@
+# Ignore videos
+*.mp4
+
+# Ignore executables
+*.exe
+
+# Logs
+*.log
+
+# Zip files
+*.zip
+
+# Environment files
+.env
+
+# Terraform state
+*.tfstate
+*.tfstate.backup
+
+# OS junk
+Thumbs.db
+.DS_Store

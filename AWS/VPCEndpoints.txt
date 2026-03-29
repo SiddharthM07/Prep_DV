@@ -1,0 +1,77 @@
+VPC Endpoints:
+Private connection from your VPC to AWS services WITHOUT going through the internet.
+
+With this :
+EC2 → VPC Endpoint → S3
+
+Traffic stays inside AWS network.
+
+
+
+-->Gateway Endpoint: Used only for S3 and DynamoDB
+
+How it works (Backend)
+AWS adds a route:
+Route Table
+Destination → S3 prefix
+Target → VPC Endpoint
+Traffic automatically routed internally.
+Key Point
+No ENI created.
+
+-->Interface Endpoint: interface servcies like 
+SSM
+Secrets Manager
+CloudWatch
+ECR
+Lambda
+Many AWS services
+
+
+
+
+
+
+
+
+
+
+
+==================================
+ENI = Elastic Network Interface
+
+A virtual network card (NIC) attached to an EC2 instance.
+An ENI is a virtual network interface in a VPC that provides networking capability to EC2 instances.
+
+An ENI carries all networking information:
+Private IP address
+Public IP (optional)
+Elastic IP (optional)
+Security Groups
+MAC address
+Subnet
+
+Types of ENI 
+
+-->Primary ENI (eth0)
+Created automatically when EC2 launches.
+Cannot be detached
+Required for instance networking
+
+-->Secondary ENI
+
+You can attach additional ENIs.
+
+Used for:
+multiple networks
+appliances
+advanced routing
+
+
+An EC2 can have multiple NIC attached for which are in Different subnet and different SG rules
+
+When you think:
+IP address
+Security group
+Subnet
+Actually they belong to ENI — not EC2 directly

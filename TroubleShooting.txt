@@ -1,0 +1,45 @@
+Jenkins:     Check Logs from end because mostly error will be at the end
+============
+Errors During pulling Git repo
+**128 --(No Cred )
+**401,403-- (Wrong Creds)
+**137 --OOM may get if Master node memory is full suggested to run on slaves 
+Master usually used to maintain Jenkins and also to run pipeline so it's suggested to attach slave and run pipelines over there
+to avoid we can define xms and xmx in our pipeline 
+xms --min amount of memory 
+xmx --max memory our pipeline can use 
+
+**Docker/mvn not found --Tool is not installed or available
+may be installed but defined in our pipeline --not available
+it may not properly installed --not installed
+
+**500 internal server--Server may be down for a minimal amount of time systemctl restart
+   
+
+**Sonar and Nexus 
+Not reachable --check if sonar server is running or not 
+Unauthorized-- token may be expierd or wrong token passed (sonar)
+Unauthorized 401/403-- Creds of Nexus 
+
+
+GIT
+====
+**401,403--credentials issues 
+**Merge conflicts -- 
+
+Docker
+=======
+**Unauthorized 401/403
+**Docker Not Found
+**User access --Use usermod -aG (-AG will remove the user from previous group) newgrp docker
+
+K8s
+---
+** image pull backoff --image doesn’t exist(due to wrong imagename)
+**crashloop backoff -- need to check logs of the pod
+
+Linux:
+======
+nslookup/ping ip /
+
+

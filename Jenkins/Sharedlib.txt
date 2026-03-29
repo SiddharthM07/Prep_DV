@@ -1,0 +1,54 @@
+Jenkins Shared Library is a reusable collection of pipeline code and functions that can be shared across multiple Jenkins pipelines to avoid duplication and enforce standard practices.
+
+Create Separate Git Repo
+
+Example:
+
+jenkins-shared-library/
+Step 2 — Store Reusable Pipeline Code
+
+Functions like:
+
+build app
+
+run tests
+
+deploy to Kubernetes
+
+terraform apply
+
+Step 3 — Jenkins Loads Library
+
+Inside Jenkinsfile:
+
+@Library('my-shared-lib') _
+
+Now pipeline can use shared functions.
+
+Contains reusable pipeline steps.
+
+Example:
+
+vars/
+   buildApp.groovy
+   deployApp.groovy
+
+These become callable functions.
+
+Example usage:
+
+buildApp()
+2️⃣ src/
+
+Reusable classes (advanced usage).
+
+Think:
+
+Java/Groovy helper classes
+3️⃣ resources/
+
+Static files:
+
+configs
+
+templates

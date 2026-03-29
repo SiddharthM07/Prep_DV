@@ -1,0 +1,244 @@
+ku run trouble1 --image=kiran2361993/troubleshootingtools:v1 -n default
+ku run trouble2 --image=kiran2361993/troubleshootingtools:v1 -n default
+
+#Deny Traffic inside ns
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-ingress
+  namespace: default
+spec:
+  podSelector: 
+    matchLabels:
+      run: trouble1
+  policyTypes:
+  - Ingress
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-egress
+  namespace: default
+spec:
+  podSelector: 
+    matchLabels:
+      run: trouble1
+  policyTypes:
+  - Egress
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-ingress-egress
+  namespace: default
+spec:
+  podSelector: 
+    matchLabels:
+      run: trouble1
+  policyTypes:
+  - Ingress
+  - Egress
+  
+  ---
+  #Block All Traffic 
+
+  ---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-all-traffic-prod
+  namespace: prod
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-all-traffic-dev
+  namespace: dev
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-all-traffic-qa
+  namespace: qa
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+
+---
+#ALLOW TRAFFIC SINGLE NS
+
+#This Policy Will Allow Traffic Between PODs in prod NS with Label ns=prod
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-traffic-within-prod-namespace
+  namespace: prod
+spec:
+  podSelector: 
+   matchLabels:
+    ns: prod
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          ns: prod
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          ns: prod
+
+---
+#ALLOW DEV TO PROD 
+
+#Allow Ingress Traffic From dev To prod applied at prod Namespace
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-traffic-from-dev-to-prod
+  namespace: prod
+spec:
+  podSelector: 
+   matchLabels:
+    ns: prod
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          nsp: dev
+    - podSelector:
+        matchLabels:
+          ns: dev
+
+#Allow Egress Traffic From dev To prod applied at dev Namespace
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-traffic-from-dev-to-prod
+  namespace: dev
+spec:
+  podSelector: 
+   matchLabels:
+    ns: dev
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          nsp: prod
+    - podSelector:
+        matchLabels:
+          ns: prod
+
+---
+
+#ALLOW PROD TO QA AT TCP PORT 8888
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-traffic-from-prod-to-qa-on-tcp8888
+  namespace: qa
+spec:
+  podSelector: 
+   matchLabels:
+    ns: qa
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          nsp: prod
+    - podSelector:
+        matchLabels:
+          ns: prod
+    ports:
+    - protocol: TCP
+      port: 8888
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-traffic-from-prod-to-qa-on-tcp8888
+  namespace: prod
+spec:
+  podSelector: 
+   matchLabels:
+    ns: prod
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          nsp: qa
+    - podSelector:
+        matchLabels:
+          ns: qa
+    ports:
+    - protocol: TCP
+      port: 8888
+
+---
+#ALLOW CORE DNS INGRESS
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-traffic-from-prod-to-coredns-on-tcp53
+  namespace: prod
+spec:
+  podSelector: 
+   matchLabels:
+    ns: prod
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    - podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 9153
+
+
+#ku get pods -n kube-system
+

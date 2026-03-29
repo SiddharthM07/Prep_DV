@@ -1,0 +1,96 @@
+Taints and tollerations help us to control which pod to be shceduled on which node?
+
+Use cases:
+Dedicated Nodes,Isolating critical work loads,Preventing scheduling on Control plane nodes,Maintainence Node,Node Resource Constarint 
+
+A Taint is applied to a node to indicate that it should not accept certain pods unless they explicitly tolerate it.
+Taints are applied to nodes using the following command:
+
+kubectl taint nodes <node-name> <key>=<value>:<effect>
+
+"""
+NoSchedule	New pods will not be scheduled unless they have a matching toleration.
+PreferNoSchedule	Kubernetes tries to avoid scheduling pods but doesn’t enforce it strictly.
+NoExecute	Existing pods without a matching toleration will be evicted from the node.
+"""
+
+A Toleration is applied to a pod, allowing it to bypass a node’s taint and be scheduled on it.
+
+How to Apply a Toleration?
+Tolerations are defined in a pod’s YAML under spec.tolerations:
+
+tolerations:
+  - key: "storage"
+    operator: "Equal"
+    value: "ssd"
+    effect: "NoSchedule"
+
+Equal (default)	The key and value must exactly match the taint.
+Exists	Only the key needs to match, and the value is ignored.
+
+tolerations:
+  - key: "storage"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+verifying taints 
+kubectl describe node my-second-cluster-worker | grep -i taint
+kubectl describe node my-second-cluster-worker2 | grep -i taint
+
+The pod remains in Pending state because it does not tolerate any taint.
+
+we can manually scheduled a pod on the control plane node by specifying the nodeName field in the pod definition. This bypasses the Kubernetes scheduler entirely.
+
+NodeSelector and Affinity:
+In Kubernetes, scheduling decisions determine where a pod runs within the cluster. While Kubernetes has a built-in scheduler that automatically assigns pods to nodes, administrators often need to influence scheduling decisions to ensure specific workloads run on designated nodes.
+To achieve this, Kubernetes provides label-based scheduling techniques such as:
+
+Node Selector (Basic)
+Node Affinity and Anti-Affinity (Advanced)
+"""
+Node Selector - Assigns pods to nodes based on simple key-value labels.
+Node Affinity - Provides more flexibility, including soft preferences and multiple conditions.
+"""
+
+nodeSelector is the simplest way to assign a pod to a node based on labels.
+
+Nodes must have specific labels for the pod to be scheduled.
+If no node matches the label, the pod remains in a Pending state.
+Only supports exact key-value matching (no advanced logic).
+
+"""
+In	Matches if the node’s label exists in the provided values.
+NotIn	Matches if the node’s label does not exist in the provided values.
+Exists	Matches if the node has the specified key, regardless of its value.
+DoesNotExist	Matches if the node does not have the specified key.
+Gt	Matches if the label’s value is greater than the specified number.
+Lt	Matches if the label’s value is less than the specified number.
+"""
+
+PodAntiAffinity tells Kubernetes NOT to place certain pods together on the same node.
+---------------
+“Keep these pods apart.”
+
+
+requiredDuringSchedulingIgnoredDuringExecution	Hard rule – The pod will only be scheduled on matching nodes. If no matching node exists, the pod stays in Pending state.
+
+preferredDuringSchedulingIgnoredDuringExecution	Soft rule – The pod will prefer matching nodes but can be scheduled elsewhere if needed.
+
+
+""""
+The ideal scheduling strategy requires using both Taints & Tolerations and Node Affinity.
+
+Taints prevent unwanted pods from landing on a node.
+Node Affinity ensures the right pods land on the right nodes.
+Without both, pods might still land on unintended nodes.
+""""
+
+What We Observed with Taints & Tolerations
+Taints repel pods from certain nodes unless they have a matching toleration.
+Even if a node has a hard restriction (NoSchedule or NoExecute), pods with tolerations could still land on untainted nodes.
+Taints & Tolerations do not interact with node labels.
+
+What We Observed with Node Affinity
+Node Affinity ensures pods are scheduled only on nodes with specific labels.
+Pods without affinity can still land on labeled nodes.
+Affinity does not prevent other pods from using the same node unless combined with taints.

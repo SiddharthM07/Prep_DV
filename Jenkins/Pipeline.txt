@@ -1,0 +1,193 @@
+We separate build and deployment pipelines. Jenkins builds the Docker image only once, stores it in a registry, and later pipelines promote the same image tag across environments.”
+
+Code Merge (develop/release)
+        ↓
+Jenkins Build Pipeline
+        ↓
+Docker Image Created (once)
+        ↓
+Push to Registry
+        ↓
+Deploy Dev
+        ↓
+Promote → QA
+        ↓
+Promote → Staging
+        ↓
+Manual Approval
+        ↓
+Promote → Production
+
+In our GitFlow setup, developers create feature branches, and Jenkins multibranch pipelines automatically trigger CI using the Jenkinsfile present in that branch.
+
+When the feature is merged into the develop branch, CI runs again to validate the integrated codebase.
+
+Deployment is handled by a separate CD pipeline rather than the multibranch CI pipeline. The CI pipeline, upon successful completion, triggers the CD pipeline by passing the image tag as a parameter.
+
+The CD Jenkinsfile is usually stored either in the same repository as a separate file or in a dedicated infrastructure repository, allowing centralized deployment control and approval gates.”
+
+Feature/Develop branch
+        ↓
+        CI Pipeline
+   (Build + Scan + Push ECR)
+        ↓
+Pass IMAGE_TAG
+        ↓
+        CD Pipeline
+   (Deploy to EKS)
+
+
+pipeline {
+    agent { label 'docker-maven-trivy' }
+
+    tools {
+        maven 'maven3'
+    }
+
+    environment {
+        SONAR_IP = '172.31.37.48'
+        ECR_REGISTRY = '386275436648.dkr.ecr.ap-south-1.amazonaws.com'
+        IMAGE_REPO = "${ECR_REGISTRY}/cwvj-devsecops-demo"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
+    stages {
+
+        stage('Trivy FS Scan') {
+            steps {
+                sh 'trivy fs --exit-code 1 --severity HIGH,CRITICAL .'
+            }
+        }
+
+        stage('Build & Sonar') {
+            steps {
+                withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                    sh """
+                    mvn clean verify sonar:sonar \
+                    -Dsonar.projectKey=cwvj-devsecops-demo \
+                    -Dsonar.host.url=http://${SONAR_IP}:9000 \
+                    -Dsonar.token=${SONAR_TOKEN} \
+                    -Dsonar.qualitygate.wait=true
+                    """
+                }
+            }
+        }
+
+        stage('ECR Login') {
+            steps {
+                sh '''
+                aws ecr get-login-password --region ap-south-1 |
+                docker login --username AWS --password-stdin $ECR_REGISTRY
+                '''
+            }
+        }
+
+        stage('Build Image') {
+            steps {
+                sh '''
+                export DOCKER_BUILDKIT=0
+                docker build --platform linux/amd64 \
+                -t "$IMAGE_REPO:$IMAGE_TAG" .
+                '''
+            }
+        }
+
+        stage('Trivy Image Scan') {
+            steps {
+                sh 'trivy image --exit-code 1 --severity HIGH,CRITICAL "$IMAGE_REPO:$IMAGE_TAG"'
+            }
+        }
+
+        stage('Push to ECR') {
+            steps {
+                sh 'docker push "$IMAGE_REPO:$IMAGE_TAG"'
+            }
+        }
+
+        ⭐ stage('Trigger CD Pipeline') {
+            steps {
+                build job: 'cwvj-CD',
+                parameters: [
+                    string(name: 'IMAGE_TAG', value: IMAGE_TAG),
+                    string(name: 'IMAGE_REPO', value: IMAGE_REPO),
+                    string(name: 'ENV', value: 'dev')
+                ]
+            }
+        }
+    }
+}
+
+CD
+===
+
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'IMAGE_TAG')
+        string(name: 'IMAGE_REPO')
+        choice(name: 'ENV', choices: ['dev','qa','prod'])
+    }
+
+    stages {
+
+        stage('Update Kubeconfig') {
+            steps {
+                sh '''
+                aws eks update-kubeconfig \
+                --region ap-south-1 \
+                --name cwvj-devsecops-eks
+                '''
+            }
+        }
+
+        stage('Update Deployment File') {
+            steps {
+                sh '''
+                sed -i "s|image:.*|image: ${IMAGE_REPO}:${IMAGE_TAG}|g" deploy-svc.yaml
+                '''
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                kubectl apply -f deploy-svc.yaml
+
+                kubectl rollout status \
+                -n cwvj-devsecops \
+                deployment/cwvj-devsecops-demo \
+                --timeout=60s || {
+
+                    kubectl rollout undo \
+                    -n cwvj-devsecops \
+                    deployment/cwvj-devsecops-demo || true
+                    exit 1
+                }
+                '''
+            }
+        }
+    }
+}
+
+
+Create CD Job
+New Item → Pipeline
+Name: cwvj-CD
+
+From SCM
+Set:
+Repo URL
+Branch (usually main/develop)
+Script Path:
+Jenkinsfile-cd
+
+Jenkins simply:
+
+-->Looks for a job named cwvj-CD
+-->Starts it
+-->Passes parameters
+
+That’s it.
+
+No guessing.

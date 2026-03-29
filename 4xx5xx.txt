@@ -1,0 +1,97 @@
+4xx → Client-side problem
+5xx → Server-side problem
+
+
+400 — Bad Request
+Request is malformed.
+Example:
+invalid JSON
+wrong request format
+
+🔹 401 — Unauthorized
+Authentication missing or invalid.
+Example:
+missing token
+invalid JWT
+
+🔹 403 — Forbidden (VERY COMMON)
+User authenticated but not allowed.
+Example:
+IAM permission issue
+API access denied
+
+🔹 404 — Not Found (SUPER COMMON)
+Resource or endpoint doesn’t exist.
+Example:
+/api/v1/users → wrong URL
+
+🔹 405 — Method Not Allowed
+Wrong HTTP method.
+Example:
+POST used instead of GET
+
+🔹 408 — Request Timeout
+Client took too long.
+
+🔹 429 — Too Many Requests (VERY IMPORTANT)
+Rate limit exceeded.
+Common with:
+API Gateway
+WAF
+throttling
+These usually mean backend problem.
+===================
+🔹 500 — Internal Server Error (MOST COMMON)
+
+Generic server failure.
+
+Could be:
+
+app crash
+
+unhandled exception
+
+🔹 502 — Bad Gateway (VERY VERY COMMON)
+
+Upstream server returned invalid response.
+
+Typical causes:
+
+ALB → Backend down
+API Gateway → Lambda error
+🔹 503 — Service Unavailable (CRITICAL)
+
+Server temporarily unavailable.
+
+Reasons:
+
+overloaded system
+
+scaling issue
+
+maintenance
+
+🔹 504 — Gateway Timeout (SUPER IMPORTANT)
+
+Backend didn’t respond in time.
+
+Common causes:
+
+slow DB
+
+network delay
+
+backend hanging
+
+
+| Code | Meaning             | DevOps Hint          |
+| ---- | ------------------- | -------------------- |
+| 400  | Bad request         | Client payload issue |
+| 401  | Unauthorized        | Auth problem         |
+| 403  | Forbidden           | Permission issue     |
+| 404  | Not found           | Wrong route          |
+| 429  | Too many requests   | Rate limit           |
+| 500  | Internal error      | App crash            |
+| 502  | Bad gateway         | Backend unreachable  |
+| 503  | Service unavailable | Overload/down        |
+| 504  | Gateway timeout     | Slow backend         |

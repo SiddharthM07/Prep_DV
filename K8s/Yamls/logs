@@ -1,0 +1,15 @@
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/soapfree.online/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/soapfree.online/privkey.pem
+This certificate expires on 2026-03-30.
+These files will be updated when the certificate renews.
+
+NEXT STEPS:
+- This certificate will not be renewed automatically. Autorenewal of --manual certificates requires the use of an authentication hook script (--manual-auth-hook) but one was not provided. To renew this certificate, repeat this same certbot command before the certificate's expiry date.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+If you like Certbot, please consider supporting our work by:
+ * Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+ * Donating to EFF:                    https://eff.org/donate-le
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+root@ip-10-1-1-139:~#

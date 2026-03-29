@@ -1,0 +1,75 @@
+# kubectl create secret tls my-tls-secret --key="tls.key" --cert="tls.crt" -n istio-system
+# kubectl create secret tls my-tls-secret --key="tls.key" --cert="tls.crt" -n default
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway #Similar to Kubernetes Ingress
+metadata:
+  name: app-gateway
+spec:
+  selector:
+    istio: ingressgateway # label of ingressgateway deployed above
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "vote.soapfree.online"
+    - "result.soapfree.online"
+    - "www.soapfree.online"
+    tls:
+     httpsRedirect: true
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - "vote.soapfree.online"
+    - "result.soapfree.online"
+    - "www.soapfree.online"
+    tls:
+      credentialName: my-tls-secret # this should match with Certificate secretName
+      mode: SIMPLE
+      privateKey: sds
+      serverCertificate: sds
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vote
+spec:
+  hosts:
+  - "vote.soapfree.online"
+  - "www.soapfree.online"
+  gateways:
+  - app-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: vote
+        port:
+          number: 80
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: result
+spec:
+  hosts:
+  - "result.soapfree.online"
+  gateways:
+  - app-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: result
+        port:
+          number: 80

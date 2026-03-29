@@ -1,0 +1,65 @@
+Docker containers will run only till the time they are doing something once the task is done they exit 
+
+FROM: Sets the base of the image
+ADD: Used to copy files form host to image
+WORKDIR: Once the image is created it will make this as current working Directory
+RUN: Executes the command during build process
+Expose : To document not for openining port 
+
+CMD: Specifies which command to run when container starts can completly replaced by runtime cmd 
+
+Copy --to copy simple files "ADD" may donwload the file from URL's and copy archive files incase we need only simple copy COPY will work 
+
+Note:
+ADD- Only when you need its special features (auto‑extract archives or pull from URLs).
+- Interview tip: Say “COPY is the safer, more explicit choice; ADD has extra magic but can be confusing, so best practice is to stick with COPY unless you need those features.”
+
+
+
+Slim -->Smaller images doesn't have troubleshooting tools or documentations less porne to attacks as less surface
+
+CMD is a Exec Form that means it runs commands directly without opening a shell as a process in container 
+Less prone to attacks like shell injection and consumes less resources
+
+
+Shell form -- Runs commands in a shell /bin/sh -c by default spawns a shell process first and  then runs the command
+-->BuildContext: Anything or file that is requierd to build the image docker copies everything from this to docker deamon
+Alwasy keep things that are req in BuildContext
+
+ENTRYPOINT:
+
+CMD vs ENTRYPOINT
+Use CMD for default command that can be overriden and ENTRYPOINT when you want the command to be defualt and only be appended to it
+
+example to see where these can be used as compliment to each other 
+ENTRYPOINT ["ping","-c","4"]
+CMD ["google.com"]
+
+here ENTRYPOINT "can also be changed during runtime" is constant that means this image will ping as a primary command and cannot be changed
+if we run docker run image-name 8.8.8.8 will ping to 8.8.8.8
+
+We can even change the ENTRYPOINT by "--"
+
+
+
+Docker inspect-->To inspect a image 
+
+Docker image should hold the things that are requierd to run the application 
+Smaller images are easy to pull push and deploy and attack surface will be small too 
+Some languages requierd compilation like Java and C where the code will be complied to machine level so they need build step
+Interpreted languages doesn't requierd build they will interpret the code line by line so they don't need build step 
+
+
+Common Layer-Creating Instructions
+In Docker, each instruction in a Dockerfile creates a new image layer (except for FROM, which sets the base image, and some metadata instructions like LABEL that may be merged).
+
+
+- RUN → Executes commands and stores the resulting filesystem changes.
+- COPY / ADD → Copies files into the image, creating a new layer.
+- CMD / ENTRYPOINT → Defines default commands; these also form layers.
+- ENV / WORKDIR / EXPOSE / USER → Configuration changes are stored as layers.
+Key Notes
+- Layers are immutable and cached: if nothing changes in a step, Docker reuses the cached layer.
+- Optimizing Dockerfiles often means ordering instructions so that frequently changing steps (like COPY .) come later, avoiding unnecessary rebuilds.
+- The final image is a stack of these layers, combined into a single filesystem view.
+Would you like me to show you a visual example Dockerfile with comments explaining exactly which lines create layers and how caching works?

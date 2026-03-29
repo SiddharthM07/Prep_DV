@@ -1,0 +1,23 @@
+1-->If new setup confirm agents and it's versions
+2-->SAST (Mandatory in DEV optional in PROD)
+Scans Java code for:
+Bugs
+Code smells
+Security issues
+Fails build if quality gate fails
+3-->Build Java Application + Create Artifact
+mvn clean package
+Produces a JAR
+Renames it to a versioned artifact
+Publishes it for later stages
+4-->Artifact Distribution
+Uploads the built JAR to S3 and Nexus for Backup / redundancy
+
+5-->Containerization (Docker Build)
+
+6-->Container Security Scanning (Trivy)
+
+7-->Push Image to Container Registry
+Pushes Docker image to DockerHub
+
+Multibranch   in Jenkins 
