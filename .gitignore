@@ -1,6 +1,6 @@
 # Ignore videos
 *.mp4
-
+ABOUT.txt
 # Ignore executables
 *.exe
 
